@@ -1,0 +1,67 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cogdb"
+version = "0.1.0"
+description = "A cognitive database engine for AI agents — unifying episodic, semantic, and procedural memory"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Mustapha Liaichi" }
+]
+keywords = ["ai", "agents", "memory", "database", "cognitive", "multi-agent", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Database",
+]
+
+dependencies = [
+    "chromadb>=0.5.0",
+    "networkx>=3.0",
+    "tiktoken>=0.7.0",
+    "sentence-transformers>=3.0.0",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+autogen = ["autogen-agentchat>=0.4.0"]
+langgraph = ["langgraph>=0.2.0"]
+mcp = ["mcp>=1.0.0"]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4.0",
+    "mypy>=1.10",
+]
+all = ["cogdb[autogen,langgraph,mcp,dev]"]
+
+[project.urls]
+Homepage = "https://github.com/mustaphaliaichi/cogdb"
+Documentation = "https://github.com/mustaphaliaichi/cogdb/tree/main/docs"
+Repository = "https://github.com/mustaphaliaichi/cogdb"
+Issues = "https://github.com/mustaphaliaichi/cogdb/issues"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "ANN"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
