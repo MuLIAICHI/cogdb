@@ -43,7 +43,11 @@ dev = [
     "ruff>=0.4.0",
     "mypy>=1.10",
 ]
-all = ["cogdb[autogen,langgraph,mcp,dev]"]
+benchmark = ["openai>=1.0.0"]
+all = ["cogdb[autogen,langgraph,mcp,dev,benchmark]"]
+
+[project.scripts]
+cogdb-mcp = "cogdb.adapters.mcp:main"
 
 [project.urls]
 Homepage = "https://github.com/mustaphaliaichi/cogdb"

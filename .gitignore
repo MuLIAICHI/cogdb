@@ -38,3 +38,8 @@ Thumbs.db
 # Environment
 .env
 .env.local
+.claude/
+
+# Backup files
+*.bak
+*.orig

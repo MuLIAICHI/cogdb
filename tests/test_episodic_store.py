@@ -1,5 +1,7 @@
 """Tests for the episodic memory store."""
 
+import gc
+import shutil
 import tempfile
 from datetime import datetime, timezone
 
@@ -12,11 +14,18 @@ from cogdb.utils.config import CogDBConfig
 
 @pytest.fixture
 def store():
-    """Create a fresh EpisodicStore with a temp directory."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        config = CogDBConfig(db_path=tmpdir)
-        config.ensure_dirs()
-        yield EpisodicStore(config)
+    """Create a fresh EpisodicStore with proper Windows cleanup."""
+    tmpdir = tempfile.mkdtemp()
+    config = CogDBConfig(db_path=tmpdir)
+    config.ensure_dirs()
+    s = EpisodicStore(config)
+    yield s
+    try:
+        s._client.reset()
+    except Exception:
+        pass
+    gc.collect()
+    shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 class TestEpisodicStoreAdd:
@@ -81,7 +90,6 @@ class TestEpisodicStoreSearch:
             scope=MemoryScope.ORGANIZATION,
         ))
 
-        # agent-1 should see its own + org-scoped
         results = store.search("memory", agent_id="agent-1", top_k=10)
         assert len(results) >= 1
 

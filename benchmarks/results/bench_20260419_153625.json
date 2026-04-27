@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-04-19T15:36:25.719305",
+  "suites_run": "consistency",
+  "llm_judge": false,
+  "consistency": {
+    "total_reads": 20,
+    "correct_reads": 20,
+    "supersede_reads": 5,
+    "correct_supersede": 5,
+    "conflict_opportunities": 3,
+    "conflicts_detected": 3,
+    "data_loss_count": 0,
+    "ops_completed": 149,
+    "duration_seconds": 28.242
+  }
+}

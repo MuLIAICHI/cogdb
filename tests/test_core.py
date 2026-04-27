@@ -1,5 +1,7 @@
 """Integration tests for the CognitiveDB main class."""
 
+import gc
+import shutil
 import tempfile
 
 import pytest
@@ -10,8 +12,15 @@ from cogdb.models import MemoryScope, MemoryType
 
 @pytest.fixture
 def db():
-    with tempfile.TemporaryDirectory() as tmpdir:
-        yield CognitiveDB(db_path=tmpdir)
+    tmpdir = tempfile.mkdtemp()
+    instance = CognitiveDB(db_path=tmpdir)
+    yield instance
+    try:
+        instance._episodic._client.reset()
+    except Exception:
+        pass
+    gc.collect()
+    shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 class TestCognitiveDBRemember:
@@ -117,7 +126,6 @@ class TestCognitiveDBContext:
         assert ctx.token_count <= ctx.token_budget
 
     def test_context_respects_budget(self, db):
-        # Add many memories
         for i in range(20):
             db.remember(
                 f"Detailed memory about topic {i} with lots of context and description " * 3,
@@ -130,21 +138,18 @@ class TestCognitiveDBContext:
             task_hint="topic 5",
             token_budget=200,
         )
-        assert ctx.token_count <= ctx.token_budget + 50  # Small tolerance for truncation
+        assert ctx.token_count <= ctx.token_budget + 50
 
 
 class TestCognitiveDBForget:
     def test_forget_episodic(self, db):
         mem_id = db.remember("To be forgotten", agent_id="a1")
         assert db.stats()["episodic"] == 1
-
         db.forget(mem_id, MemoryType.EPISODIC)
-        # ChromaDB delete is eventual, so just verify the call succeeds
 
     def test_forget_semantic(self, db):
         triple_id = db.learn("x", "y", "z", agent_id="a1")
         assert db.stats()["semantic"] == 1
-
         db.forget(triple_id, MemoryType.SEMANTIC)
         assert db.stats()["semantic"] == 0
 

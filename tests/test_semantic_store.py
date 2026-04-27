@@ -173,12 +173,14 @@ class TestSemanticStoreQuery:
         assert "b" in entities
 
     def test_get_neighbors(self, store):
+        # Use distinct predicates — same predicate would trigger contradiction check
+        # and supersede the first triple, leaving only one neighbor.
         store.add_triple(SemanticTriple(
-            subject="a", predicate="links", object="b",
+            subject="a", predicate="links_to_b", object="b",
             agent_id="test",
         ))
         store.add_triple(SemanticTriple(
-            subject="a", predicate="links", object="c",
+            subject="a", predicate="links_to_c", object="c",
             agent_id="test",
         ))
 

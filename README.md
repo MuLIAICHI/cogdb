@@ -1,235 +1,298 @@
-# CogDB — The Cognitive Database for AI Agents
+<div align="center">
 
-> No existing system combines episodic, semantic, and procedural memory with internal ML-powered optimization in a single, agent-native database.
+<img src="./assets/banner.svg" alt="CogDB — A Cognitive Database for AI Agents" width="100%"/>
 
-**CogDB** is an open-source cognitive database engine designed as a second brain for AI agents in multi-agent systems. It unifies three memory types — episodic (what happened), semantic (what is known), and procedural (how to do things) — into a single query interface that is optimized for LLM consumption, not human readability.
+<br/>
 
-## Why CogDB?
+[![License: MIT](https://img.shields.io/badge/License-MIT-10b981.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-10b981.svg?style=flat-square)](https://www.python.org/downloads/)
+[![Status: Phase 0](https://img.shields.io/badge/status-v0.1.0-10b981.svg?style=flat-square)](#roadmap)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-10b981.svg?style=flat-square)](#contributing)
 
-Every production multi-agent deployment today stitches together 2–4 separate backends (vector DB + graph DB + relational store + memory framework). Memory — the most critical differentiator for intelligent agents — is an afterthought bolted on top.
+**A second brain for AI agents — episodic, semantic, and procedural memory in one engine.**
 
-CogDB treats memory as a **first-class database problem**, not an application-layer concern.
+[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Why CogDB](#-why-cogdb) · [Roadmap](./BACKLOG.md) · [Research](./docs/research.md)
 
-### What makes CogDB different
+</div>
 
-| Feature | Mem0 | Zep | Letta | MemPalace | **CogDB** |
-|---|---|---|---|---|---|
-| Episodic memory | ✓ | ✓✓ | ✓ | ✓ | ✓✓ |
-| Semantic memory (knowledge graph) | ✓✓ | ✓✓ | ✓ | ✓ | ✓✓✓ |
-| Procedural memory | Partial | ✗ | Partial | ✗ | **✓✓** |
-| Unified tri-store engine | ✗ | ✗ | ✗ | ✗ | **✓** |
-| Token-cost-aware retrieval | ✗ | ✗ | ✗ | Partial | **✓** |
-| Multi-agent memory scopes | Scoped | Per-user | Shared blocks | Per-agent | **4 formal scopes** |
-| Self-improving retrieval | ✗ | ✗ | ✗ | ✗ | **Planned (Phase 2)** |
-| Framework adapters | SDK | SDK | SDK/ADE | MCP | **AutoGen + LangGraph + MCP** |
+---
 
-## Architecture
+## 🧠 The Problem
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Agent Interface                       │
-│         MCP Tools  │  Python SDK  │  REST API            │
-├─────────────────────────────────────────────────────────┤
-│                    Query Planner                         │
-│    Token-cost optimization  │  Progressive loading       │
-├─────────────────────────────────────────────────────────┤
-│                  Cognitive Pipeline                      │
-│  Encoding → Storage → Consolidation → Retrieval → Decay │
-├──────────┬──────────────────┬───────────────────────────┤
-│ Episodic │    Semantic      │     Procedural            │
-│  Store   │     Store        │      Store                │
-│ (Vector) │ (Knowledge Graph)│  (Workflow Templates)     │
-├──────────┴──────────────────┴───────────────────────────┤
-│              Unified Storage Engine                      │
-│     ChromaDB  │  NetworkX/SQLite  │  SQLite              │
-└─────────────────────────────────────────────────────────┘
-```
+Every AI agent framework treats memory as someone else's problem.
 
-### Memory Types
+You bolt on a vector database. Then a graph DB for relationships. Then SQLite for structured stuff. Now you're maintaining three backends that don't talk to each other. When two agents update the same fact at the same time, things break silently.
 
-**Episodic Memory** — Timestamped records of agent interactions, observations, and tool calls. Stored as embeddings with full metadata. Supports temporal queries ("what happened in the last 3 tasks?") and similarity search ("find similar past situations").
+CogDB is a single database that gives AI agents a complete memory system. One install, one interface, one data store.
 
-**Semantic Memory** — A temporal knowledge graph where entities and relationships carry validity windows, confidence scores, and provenance links. Facts have lifecycles: they can be confirmed, contradicted, superseded, or expired.
+## 🌱 What CogDB Does Differently
 
-**Procedural Memory** — Learned workflows extracted from successful agent task completions. When an agent solves a multi-step problem, the solution pattern is captured as a reusable template. The least-addressed memory type in the current landscape.
+CogDB unifies the three types of memory that map to how human cognition actually works:
 
-### Memory Scopes (Multi-Agent)
+<table>
+<tr>
+<td width="33%" valign="top">
 
-- **Private** — Single agent, fully isolated
-- **Team** — Defined agent group, read-write with conflict resolution
-- **Organization** — All agents, read with permissioned write
-- **Session** — Ephemeral, single conversation
+### 🟢 Episodic
+**What happened**
 
-### Token-Cost-Aware Retrieval
+Timestamped records of agent interactions, observations, and tool calls. Stored as vector embeddings with full metadata. Agents search by similarity — *"find me situations like this one."*
 
-CogDB doesn't just find relevant memories — it returns them in the most token-efficient format for LLM consumption. Progressive loading delivers context in tiers:
+</td>
+<td width="33%" valign="top">
 
-- **L0 — Identity** (~50 tokens): Agent name, role, critical constraints
-- **L1 — Critical facts** (~200 tokens): Key knowledge graph entities
-- **L2 — Task-relevant** (~500 tokens): Memories matching current context
-- **L3 — Deep search** (variable): Full similarity search across all stores
+### 🟢 Semantic
+**What is known**
 
-## Quick Start
+A temporal knowledge graph where facts have lifecycles. Facts get superseded automatically when newer ones contradict them. Confidence scores, validity windows, provenance links.
 
-### Installation
+</td>
+<td width="33%" valign="top">
+
+### 🟢 Procedural
+**How to do things**
+
+Learned workflows captured from successful agent task completions. Reusable templates with success tracking. **This memory type basically doesn't exist in any other system.**
+
+</td>
+</tr>
+</table>
+
+## ⚡ Why CogDB
+
+| Capability | Mem0 | Zep | Letta | MemPalace | **CogDB** |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Episodic memory | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Semantic / knowledge graph | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Procedural memory | ⚠️ | ✗ | ⚠️ | ✗ | **✓** |
+| Token-aware retrieval | ✗ | ✗ | ✗ | ⚠️ | **✓** |
+| Multi-agent memory scopes | scoped | per-user | shared | per-agent | **4 formal scopes** |
+| Single unified engine | ✗ | ✗ | ✗ | ✗ | **✓** |
+| MCP server | ✗ | ✗ | ✗ | ✓ | **✓** |
+| AutoGen + LangGraph adapters | partial | ✗ | ✗ | ✗ | **✓** |
+
+## 🏗 Architecture
+
+<div align="center">
+
+<img src="./assets/architecture.svg" alt="CogDB Architecture" width="100%"/>
+
+</div>
+
+Four layers, one engine:
+
+- **Layer 1 — Agent Interface.** Drop-in adapters for AutoGen and LangGraph. MCP server so any MCP-compatible agent can connect. Native Python SDK.
+- **Layer 2 — Query Planner.** Token-aware retrieval routes queries across stores and packs results into the budget you set. Highest importance first, nothing wasted.
+- **Layer 3 — Cognitive Pipeline.** Encoding, storage, consolidation, retrieval, and decay. Memories don't just sit there — they evolve.
+- **Layer 4 — Tri-Memory Store.** Episodic (vector embeddings), semantic (temporal knowledge graph), procedural (workflow templates). Three stores, one query interface.
+
+## 🚀 Quick Start
 
 ```bash
-pip install cogdb
+pip install git+https://github.com/MuLIAICHI/cogdb.git
 ```
-
-### Basic Usage
 
 ```python
 from cogdb import CognitiveDB
 
-db = CognitiveDB()
+db = CognitiveDB(db_path="./agent_memory")
 
-# Store an episodic memory
+# 🟢 Store an episodic memory
 db.remember(
-    content="User prefers dark mode and compact layouts",
-    memory_type="episodic",
-    agent_id="ui-agent",
-    importance=0.8
+    "Deployed v2.3 to production. CORS error on /users endpoint.",
+    agent_id="devops-agent",
+    importance=0.9,
 )
 
-# Store a semantic fact with validity
+# 🟢 Store a semantic fact (gets superseded automatically when contradicted)
 db.learn(
-    subject="user_preference",
-    predicate="theme",
-    object="dark_mode",
-    confidence=0.95,
-    valid_from="2026-04-14"
+    subject="api_service",
+    predicate="version",
+    object="v2.3",
+    agent_id="devops-agent",
+    confidence=1.0,
 )
 
-# Store a procedural memory (learned workflow)
+# 🟢 Store a procedural workflow
 db.learn_procedure(
-    name="deploy_frontend",
+    name="fix_cors_error",
     steps=[
-        {"action": "run_tests", "tool": "pytest"},
-        {"action": "build", "tool": "npm run build"},
-        {"action": "deploy", "tool": "vercel --prod"}
+        {"action": "check_nginx_config", "tool": "cat /etc/nginx/conf.d/api.conf"},
+        {"action": "add_cors_headers", "tool": "sed"},
+        {"action": "reload_nginx", "tool": "systemctl reload nginx"},
+        {"action": "verify", "tool": "curl -I"},
     ],
-    success_rate=0.92,
-    source_episodes=["ep_001", "ep_002", "ep_003"]
+    agent_id="devops-agent",
+    applicable_contexts=["cors", "nginx", "api"],
 )
 
-# Recall with token budget
+# 🟢 Recall with a token budget
 memories = db.recall(
-    query="What does the user prefer for UI?",
-    agent_id="ui-agent",
+    "How do we fix CORS errors?",
+    agent_id="devops-agent",
     token_budget=500,
-    memory_types=["episodic", "semantic"]
 )
 
-# Get progressive context for an agent
+# 🟢 Get progressive context (L0 → L3)
 context = db.get_context(
-    agent_id="ui-agent",
-    level=2,  # L0 + L1 + L2
-    task_hint="redesigning the settings page"
+    agent_id="devops-agent",
+    level=2,
+    task_hint="API gateway returning 403 on preflight",
+    token_budget=800,
 )
 ```
 
-### AutoGen Integration
+## 🔌 Integrations
+
+<table>
+<tr>
+<td width="33%" valign="top">
+
+### 🟢 AutoGen
 
 ```python
-from autogen import ConversableAgent
 from cogdb.adapters.autogen import CogDBMemory
+from autogen_agentchat.agents import AssistantAgent
 
-memory = CogDBMemory(db_path="./agent_memory")
-
-agent = ConversableAgent(
+memory = CogDBMemory(db_path="./memory")
+agent = AssistantAgent(
     name="assistant",
-    llm_config={"model": "gpt-4"},
-    memory=[memory]
+    memory=[memory],
 )
 ```
 
-### LangGraph Integration
+Drop-in replacement for AutoGen's basic `ListMemory`.
+
+</td>
+<td width="33%" valign="top">
+
+### 🟢 LangGraph
 
 ```python
-from langgraph.graph import StateGraph
-from cogdb.adapters.langgraph import CogDBCheckpointer, CogDBStore
+from cogdb.adapters.langgraph import (
+    CogDBCheckpointer,
+    CogDBStore,
+)
 
-checkpointer = CogDBCheckpointer(db_path="./agent_memory")
-store = CogDBStore(db_path="./agent_memory")
-
-graph = StateGraph(State)
-# ... define your graph ...
-app = graph.compile(checkpointer=checkpointer, store=store)
+graph = StateGraph(State).compile(
+    checkpointer=CogDBCheckpointer(...),
+    store=CogDBStore(...),
+)
 ```
 
-## Benchmarks
+Native `BaseCheckpointSaver` and `BaseStore` implementations.
 
-Run the benchmark suite against Mem0 and baseline ChromaDB:
+</td>
+<td width="33%" valign="top">
+
+### 🟢 MCP Server
 
 ```bash
-python -m benchmarks.run --suite all
+cogdb-mcp --db-path ./memory
 ```
 
-Benchmark dimensions:
-- **Retrieval accuracy** on LongMemEval
-- **Token efficiency** (information density per token returned)
-- **Multi-agent consistency** (concurrent read/write correctness)
-- **Progressive loading** (latency at each context level)
+Exposes 6 tools — `remember`, `recall`, `learn`, `learn_procedure`, `get_context`, `forget` — to any MCP-compatible agent (Claude Code, Cursor, Windsurf).
 
-## Project Roadmap
+</td>
+</tr>
+</table>
 
-### Phase 0 — Python PoC (Current)
-- [x] Repo structure and research documentation
-- [ ] Tri-memory store (episodic + semantic + procedural)
-- [ ] Token-cost-aware retrieval with progressive loading
-- [ ] AutoGen Memory protocol adapter
-- [ ] LangGraph checkpointer + store adapter
-- [ ] MCP server interface
-- [ ] Benchmarks vs Mem0 and MemPalace
+## 📊 Token-Aware Retrieval
 
-### Phase 1 — Rust Engine
-- [ ] Purpose-built storage engine with hybrid indexes (HNSW + B+Tree + adjacency lists)
-- [ ] WAL + crash recovery
-- [ ] Multi-agent memory scopes with COW isolation
-- [ ] Native MCP server
+This is the part that took the most iteration. Most memory systems dump a wall of context into the LLM and hope for the best. CogDB does it in tiers:
 
-### Phase 2 — Self-Improving
-- [ ] Learned retrieval optimizer
-- [ ] Memory consolidation model
-- [ ] Access pattern predictor
-- [ ] Importance scorer
+```
+┌─ Token Budget: 500 ──────────────────────────────────┐
+│                                                       │
+│  L0  Identity              ~50 tokens     [filled]    │
+│  L1  Critical facts       ~200 tokens     [filled]    │
+│  L2  Task-relevant        ~250 tokens     [filled]    │
+│  L3  Deep search             0 tokens     [skipped]   │
+│                                                       │
+└───────────────────────────────────────────────────────┘
+```
 
-### Phase 3 — Agent-Native Evolution
-- [ ] Agent-driven schema evolution
-- [ ] Token-cost query planner
-- [ ] LLM-optimized internal representation
+Set a budget, CogDB fills it from the top with the highest-importance memories that fit. The agent gets exactly what it needs and nothing it doesn't — which means faster responses, lower API costs, and no context window blowouts.
 
-## Research
+## 👥 Multi-Agent Memory Scopes
 
-See [`docs/research.md`](docs/research.md) for the full landscape analysis covering:
-- Comprehensive comparison of 15+ existing memory systems
-- Academic foundations (CoALA, learned indexes, self-driving databases)
-- The five whitespace opportunities CogDB addresses
-- Traditional DB primitives mapped to cognitive equivalents
+When you have multiple agents working together, they need different levels of memory access. CogDB has four formal scopes with consistency guarantees:
 
-## Contributing
+```
+┌─────────────────────────────────────────────┐
+│  🟢 Organization      All agents read       │
+│  ┌─────────────────────────────────────┐    │
+│  │  🟢 Team        Group read-write    │    │
+│  │  ┌─────────────────────────────┐    │    │
+│  │  │  🟢 Private   Single agent  │    │    │
+│  │  └─────────────────────────────┘    │    │
+│  └─────────────────────────────────────┘    │
+└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  🟢 Session  Ephemeral, auto-deleted        │
+└─────────────────────────────────────────────┘
+```
 
-CogDB is in early development. If you're interested in AI agent memory infrastructure, we'd love your input:
+Contradiction detection runs at write time. Conflict resolution handles concurrent writes. No silent data loss when agents collaborate.
 
-1. **Research contributions** — Analysis of new memory systems, benchmarks, academic papers
-2. **Framework adapters** — CrewAI, Semantic Kernel, OpenAI Agents SDK
-3. **Benchmark scenarios** — Real-world multi-agent memory patterns
-4. **Core engine** — Storage, query planning, memory pipeline
+## 🗺 Roadmap
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+CogDB is in **Phase 0** — a Python proof-of-concept that proves the core ideas work.
 
-## License
+- ✅ **Phase 0 — Python PoC.** Tri-memory engine, adapters, MCP server. *(Current)*
+- 🚧 **Phase 0.5 — Validation.** Production dogfooding via [CogBoard](https://github.com/MuLIAICHI/cogboard), benchmarks vs Mem0/Zep/MemPalace.
+- 📋 **Phase 1 — Rust Engine.** Purpose-built storage with hybrid indexes (HNSW + B+Tree + adjacency lists), WAL, crash recovery.
+- 📋 **Phase 2 — Self-Improving.** Internal ML models for retrieval optimization, consolidation, access prediction, importance scoring.
+- 💭 **Phase 3 — Agent-Native Evolution.** Agents define and evolve schemas through interaction.
+- 💭 **Phase 4 — Predictive Memory.** Consequence prediction inspired by LeCun's JEPA — agents simulate outcomes before acting.
 
-MIT
+Full roadmap with status tracking → [BACKLOG.md](./BACKLOG.md)
 
-## Citation
+## 📚 Research
+
+CogDB is grounded in academic research on cognitive architectures, learned database systems, and multi-agent memory:
+
+- **CoALA** (Sumers, Yao et al., 2024) — Cognitive Architectures for Language Agents
+- **JEPA** (LeCun, 2022) — A Path Towards Autonomous Machine Intelligence
+- **Learned Index Structures** (Kraska et al., 2018) — Neural networks replacing B-Trees
+- **Multi-Agent Memory Architecture** (UCSD, 2026) — Cache coherence for agent memory
+
+Full landscape analysis covering 15+ existing systems → [docs/research.md](./docs/research.md)
+
+## 🤝 Contributing
+
+CogDB is in early development and contributions are welcome across:
+
+- **Framework adapters** — CrewAI, OpenAI Agents SDK, Semantic Kernel
+- **Benchmarks** — LongMemEval, multi-agent consistency tests
+- **Core engine** — Memory consolidation, importance scoring, retrieval
+- **Research** — New memory system analyses, academic paper reviews
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) to get started.
+
+## 📄 License
+
+MIT — see [LICENSE](./LICENSE).
+
+## 📖 Citation
+
+If you use CogDB in research or production:
 
 ```bibtex
 @software{cogdb2026,
-  title={CogDB: A Cognitive Database for AI Agents},
-  author={Mustapha Liaichi},
-  year={2026},
-  url={https://github.com/mustaphaliaichi/cogdb}
+  title  = {CogDB: A Cognitive Database for AI Agents},
+  author = {Mustapha Liaichi},
+  year   = {2026},
+  url    = {https://github.com/MuLIAICHI/cogdb}
 }
 ```
+
+---
+
+<div align="center">
+
+**Built by [Mustapha Liaichi](https://github.com/MuLIAICHI)** · [AYAutomate](https://ayautomate.com)
+
+<sub>If CogDB saves you from stitching together three databases, ⭐ the repo.</sub>
+
+</div>
