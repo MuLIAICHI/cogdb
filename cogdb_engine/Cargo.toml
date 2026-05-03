@@ -1,0 +1,28 @@
+[package]
+name = "cogdb_engine"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "cogdb_engine"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bincode = "2"
+rusqlite = { version = "0.31", features = ["bundled", "chrono"] }
+hnsw_rs = "0.3"
+petgraph = { version = "0.6", features = ["serde-1"] }
+parking_lot = "0.12"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+crc32fast = "1"
+thiserror = "1"
+pyo3 = { version = "0.28", features = ["extension-module", "abi3-py310"], optional = true }
+
+[features]
+python = ["pyo3"]
+
+[dev-dependencies]
+tempfile = "3"
