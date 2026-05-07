@@ -40,6 +40,9 @@ Thumbs.db
 .env.local
 .claude/
 
+# Rust build artifacts
+cogdb_engine/target/
+
 # Backup files
 *.bak
 *.orig

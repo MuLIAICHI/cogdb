@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-05-03T22:28:39.344605",
+  "suites_run": "throughput",
+  "llm_judge": false,
+  "throughput": {
+    "n_episodic": 100,
+    "n_semantic": 100,
+    "n_procedural": 20,
+    "n_search": 50,
+    "n_scan": 20,
+    "write_episodic_total_ms": 1237.2449001704808,
+    "search_total_ms": 752.1139999153093,
+    "write_episodic_raw_total_ms": 126.82669999776408,
+    "write_semantic_total_ms": 87.81620013178326,
+    "write_procedural_total_ms": 0.0,
+    "search_raw_total_ms": 42.654599965317175,
+    "scan_batch_total_ms": 3.3964999311137944
+  }
+}

@@ -2,11 +2,15 @@
 
 When enough episodic memories accumulate, the consolidator distills
 recurring patterns into semantic triples (knowledge graph facts).
-No external LLM calls — uses heuristic pattern extraction.
+
+Default path: heuristic regex SPO extraction (no external API required).
+Optional path: LLM-powered extraction via OpenAI (set config.use_llm_consolidation=True
+and OPENAI_API_KEY env var). The regex path is always the fallback.
 """
 
 from __future__ import annotations
 
+import os
 import re
 import threading
 from collections import Counter
@@ -17,6 +21,12 @@ from cogdb.models import MemoryType, SemanticTriple
 from cogdb.stores.episodic import EpisodicStore
 from cogdb.stores.semantic import SemanticStore
 from cogdb.utils.config import CogDBConfig
+
+try:
+    from openai import OpenAI as _OpenAI
+    _OPENAI_AVAILABLE = True
+except ImportError:
+    _OPENAI_AVAILABLE = False
 
 
 # Simple (subject, predicate, object) extraction patterns.
@@ -84,9 +94,8 @@ class Consolidator:
     def run(self, agent_id: str, max_episodes: int = 100) -> int:
         """Run a consolidation pass for one agent.
 
-        Scans recent episodic memories, extracts SPO patterns, groups
-        by (subject, predicate, object) tuple, and writes the most
-        frequent ones as semantic triples with confidence scores.
+        Uses LLM extraction when config.use_llm_consolidation=True and
+        OPENAI_API_KEY is set; otherwise uses the regex SPO extractor.
 
         Args:
             agent_id: The agent whose memories to consolidate.
@@ -111,8 +120,16 @@ class Consolidator:
 
             # Extract all SPO triples from episode texts
             raw_triples: list[tuple[str, str, str, str]] = []  # (subj, pred, obj, episode_id)
+            use_llm = (
+                self._config.use_llm_consolidation
+                and _OPENAI_AVAILABLE
+                and bool(os.environ.get("OPENAI_API_KEY"))
+            )
             for ep in episodes:
-                extracted = _extract_triples(ep.content)
+                if use_llm:
+                    extracted = _extract_triples_llm(ep.content)
+                else:
+                    extracted = _extract_triples(ep.content)
                 for subj, pred, obj in extracted:
                     raw_triples.append((subj, pred, obj, ep.id))
 
@@ -162,6 +179,47 @@ class Consolidator:
                 written += 1
 
         return written
+
+
+def _extract_triples_llm(text: str) -> list[tuple[str, str, str]]:
+    """Extract (subject, predicate, object) tuples using an LLM.
+
+    Calls OpenAI gpt-4o-mini to extract structured facts. Falls back to
+    regex if the API call fails or the response can't be parsed.
+
+    Args:
+        text: Episodic memory text to extract facts from.
+
+    Returns:
+        List of (subject, predicate, object) tuples.
+    """
+    if not _OPENAI_AVAILABLE or not os.environ.get("OPENAI_API_KEY"):
+        return _extract_triples(text)
+    try:
+        import json as _json
+        client = _OpenAI()
+        prompt = (
+            "Extract factual (subject, predicate, object) triples from the text below. "
+            "Use short, lowercase identifiers. Return ONLY a JSON array of [subject, predicate, object] arrays. "
+            "Return [] if no clear facts are present.\n\nText: " + text
+        )
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=256,
+            temperature=0,
+        )
+        raw = (resp.choices[0].message.content or "[]").strip()
+        parsed = _json.loads(raw)
+        result = []
+        for item in parsed:
+            if isinstance(item, list) and len(item) == 3:
+                subj, pred, obj = str(item[0]), str(item[1]), str(item[2])
+                if 2 <= len(subj) <= 50 and 2 <= len(obj) <= 80:
+                    result.append((subj, pred, obj))
+        return result
+    except Exception:
+        return _extract_triples(text)
 
 
 def _extract_triples(text: str) -> list[tuple[str, str, str]]:

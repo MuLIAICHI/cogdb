@@ -10,12 +10,16 @@ Install: pip install langgraph>=0.2.0
 from __future__ import annotations
 
 import json
+import uuid as _uuid_mod
 from datetime import datetime, timezone
 from typing import Any, AsyncIterator, Iterator, Optional, Sequence
 
 from cogdb.core import CognitiveDB
-from cogdb.models import MemoryScope, MemoryType
+from cogdb.models import MemoryScope, MemoryType, MemoryUnit
 from cogdb.utils.config import CogDBConfig
+
+# Stable namespace UUID for LangGraph store item IDs (UUID5-based)
+_STORE_NS = _uuid_mod.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 
 try:
     from langgraph.checkpoint.base import (
@@ -253,6 +257,11 @@ class CogDBStore(BaseStore):
         self._agent_id = agent_id
         self._db = db or CognitiveDB(db_path=db_path)
 
+    def _item_id(self, namespace: tuple[str, ...], key: str) -> str:
+        """Deterministic UUID5 for a namespace+key so delete is always exact."""
+        name = f"{self._agent_id}/{_ns_to_str(namespace)}/{key}"
+        return str(_uuid_mod.uuid5(_STORE_NS, name))
+
     def get(self, namespace: tuple[str, ...], key: str) -> Optional["Item"]:
         """Retrieve a stored item by namespace and key.
 
@@ -373,12 +382,11 @@ class CogDBStore(BaseStore):
         """
         ns_str = _ns_to_str(namespace)
         payload = json.dumps(value)
-
-        # EpisodicStore prefixes metadata keys with "meta_" in ChromaDB.
-        # Storing "namespace" + "key" means ChromaDB gets "meta_namespace" + "meta_key",
-        # which delete() queries via $where filters.
-        self._db.remember(
+        # Use a deterministic UUID so delete() can find the item directly.
+        unit = MemoryUnit(
+            id=self._item_id(namespace, key),
             content=payload,
+            memory_type=MemoryType.EPISODIC,
             agent_id=self._agent_id,
             importance=0.8,
             scope=MemoryScope.PRIVATE,
@@ -388,6 +396,7 @@ class CogDBStore(BaseStore):
                 "key": key,
             },
         )
+        self._db._episodic.add(unit)
 
     def delete(self, namespace: tuple[str, ...], key: str) -> None:
         """Delete an item by namespace and key.
@@ -399,20 +408,9 @@ class CogDBStore(BaseStore):
         Example:
             >>> store.delete(("user_data", "alice"), "prefs")
         """
-        ns_str = _ns_to_str(namespace)
-        # Use metadata filter directly — similarity search is unreliable for exact key lookup
+        # Direct delete by deterministic UUID — no metadata query needed.
         try:
-            collection = self._db._episodic._collection
-            results = collection.get(
-                where={"$and": [
-                    {"meta_namespace": ns_str},
-                    {"meta_key": key},
-                ]},
-                include=[],
-            )
-            ids = results.get("ids", [])
-            if ids:
-                collection.delete(ids=ids)
+            self._db._episodic.delete(self._item_id(namespace, key))
         except Exception:
             pass
 

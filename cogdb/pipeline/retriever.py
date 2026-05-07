@@ -61,20 +61,26 @@ class Retriever:
     def recall(self, query: RecallQuery) -> list[MemoryUnit]:
         """Retrieve memories matching a query within a token budget.
 
-        Queries all requested memory stores, ranks results by
-        effective importance, and greedily fills the token budget
-        with the most important memories that fit.
+        Queries all requested memory stores and ranks results using a
+        blended score: (1-α) × effective_importance + α × HNSW_relevance,
+        where α = config.hnsw_blend_alpha (default 0.2). HNSW relevance is
+        derived from the position in the vector search result list (rank 0 =
+        most similar). Non-episodic results (semantic, procedural) use pure
+        effective_importance. Budget is filled greedily highest-score-first.
 
         Args:
             query: Structured recall query with budget and filters.
 
         Returns:
             List of MemoryUnits fitting within the token budget,
-            sorted by effective importance (highest first).
+            sorted by blended score (highest first).
         """
-        candidates: list[MemoryUnit] = []
+        alpha = self._config.hnsw_blend_alpha
 
-        # Collect from episodic store
+        # scored_candidates: list of (sort_score, MemoryUnit)
+        scored_candidates: list[tuple[float, MemoryUnit]] = []
+
+        # Collect from episodic store — HNSW returns results in similarity order
         if MemoryType.EPISODIC in query.memory_types:
             episodic_results = self._episodic.search(
                 query=query.query,
@@ -85,21 +91,30 @@ class Retriever:
                 time_range_start=query.time_range_start,
                 time_range_end=query.time_range_end,
             )
-            candidates.extend(episodic_results)
+            n_ep = max(1, len(episodic_results))
+            for rank, m in enumerate(episodic_results):
+                # Blend: importance anchors the score; HNSW rank provides relevance boost.
+                # rank=0 (most similar) gives hnsw_rel=1.0; rank=n-1 gives ~0.
+                hnsw_rel = 1.0 - rank / n_ep
+                blended = (1.0 - alpha) * m.effective_importance() + alpha * hnsw_rel
+                scored_candidates.append((blended, m))
 
-        # Collect from semantic store
+        # Collect from semantic store (no HNSW — use pure importance)
         if MemoryType.SEMANTIC in query.memory_types:
             semantic_triples = self._semantic.search_text(query.query)
             for triple in semantic_triples:
                 unit = self._triple_to_unit(triple)
-                candidates.append(unit)
+                scored_candidates.append((unit.effective_importance(), unit))
 
-        # Collect from procedural store
+        # Collect from procedural store (no HNSW — use pure importance)
         if MemoryType.PROCEDURAL in query.memory_types:
             procedures = self._procedural.search_by_context(
                 context=query.query,
                 agent_id=query.agent_id,
             )
+            # Cap to the most relevant procedures so they don't crowd out
+            # episodic memories in the token budget.
+            procedures = procedures[: self._config.max_procedures_per_query]
             for proc in procedures:
                 unit = MemoryUnit(
                     id=proc.id,
@@ -111,10 +126,11 @@ class Retriever:
                     accessed_at=proc.updated_at,
                     metadata={"procedure_name": proc.name},
                 )
-                candidates.append(unit)
+                scored_candidates.append((unit.effective_importance(), unit))
 
-        # Rank by effective importance
-        candidates.sort(key=lambda m: m.effective_importance(), reverse=True)
+        # Sort by blended score descending
+        scored_candidates.sort(key=lambda x: x[0], reverse=True)
+        candidates = [m for _, m in scored_candidates]
 
         # Greedy token-budget filling
         selected: list[MemoryUnit] = []

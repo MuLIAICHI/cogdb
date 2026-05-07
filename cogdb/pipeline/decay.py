@@ -84,63 +84,45 @@ class DecayEngine:
             offset = 0
 
             while True:
-                # Fetch a batch via the ChromaDB collection directly
-                collection = self._episodic._collection
-                where = {"agent_id": agent_id} if agent_id else None
+                # scan_batch returns list of dicts: {id, accessed_at, decay_score}
+                rows = self._episodic.scan_batch(agent_id, batch_size, offset)
 
-                try:
-                    if where:
-                        batch = collection.get(
-                            where=where,
-                            limit=batch_size,
-                            offset=offset,
-                            include=["metadatas"],
-                        )
-                    else:
-                        batch = collection.get(
-                            limit=batch_size,
-                            offset=offset,
-                            include=["metadatas"],
-                        )
-                except Exception:
+                if not rows:
                     break
 
-                ids = batch.get("ids", [])
-                metadatas = batch.get("metadatas", [])
+                to_delete: list[str] = []
+                to_update: list[tuple[str, float]] = []
 
-                if not ids:
-                    break
-
-                to_delete = []
-                to_update_ids = []
-                to_update_metas = []
-
-                for memory_id, meta in zip(ids, metadatas):
-                    accessed_at_str = meta.get("accessed_at", meta.get("created_at", ""))
+                for row in rows:
+                    accessed_at_str = row.get("accessed_at", "")
                     if not accessed_at_str:
                         continue
-
                     try:
-                        accessed_at = datetime.fromisoformat(accessed_at_str)
+                        # Chrono serializes with +00:00; fromisoformat handles it
+                        accessed_at = datetime.fromisoformat(
+                            accessed_at_str.replace("Z", "+00:00")
+                        )
+                        # Make timezone-aware for arithmetic with datetime.now(utc)
+                        if accessed_at.tzinfo is None:
+                            accessed_at = accessed_at.replace(tzinfo=timezone.utc)
                     except ValueError:
                         continue
 
                     new_decay = self.compute_decay(accessed_at)
 
                     if new_decay < eviction_threshold:
-                        to_delete.append(memory_id)
+                        to_delete.append(row["id"])
                     else:
-                        to_update_ids.append(memory_id)
-                        to_update_metas.append({**meta, "decay_score": new_decay})
+                        to_update.append((row["id"], new_decay))
 
-                if to_delete:
-                    collection.delete(ids=to_delete)
-                    evicted += len(to_delete)
+                for memory_id in to_delete:
+                    self._episodic.delete(memory_id)
+                    evicted += 1
 
-                if to_update_ids:
-                    collection.update(ids=to_update_ids, metadatas=to_update_metas)
+                if to_update:
+                    self._episodic.bulk_update_decay(to_update)
 
-                if len(ids) < batch_size:
+                if len(rows) < batch_size:
                     break
 
                 offset += batch_size

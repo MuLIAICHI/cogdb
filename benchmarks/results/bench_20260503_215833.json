@@ -1,0 +1,440 @@
+{
+  "timestamp": "2026-05-03T21:58:33.464008",
+  "suites_run": "all",
+  "llm_judge": false,
+  "tri_memory": {
+    "avg_score": 87.9,
+    "by_category": {
+      "episodic+procedural": 84.2,
+      "semantic+episodic": 91.0,
+      "all": 88.5
+    },
+    "questions": [
+      {
+        "question": "What is our standard deploy process and what errors have we encountered during p",
+        "category": "episodic+procedural",
+        "score": 67,
+        "tokens_used": 726,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "How do we fix CORS errors and has this specific issue come up before in our proj",
+        "category": "episodic+procedural",
+        "score": 100,
+        "tokens_used": 713,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What is our hotfix deploy procedure and when have we actually used it?",
+        "category": "episodic+procedural",
+        "score": 100,
+        "tokens_used": 800,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "How do we respond to production incidents and what incidents have we experienced",
+        "category": "episodic+procedural",
+        "score": 100,
+        "tokens_used": 701,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What does our code review process look like and what issues have reviewers flagg",
+        "category": "episodic+procedural",
+        "score": 83,
+        "tokens_used": 727,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "How do we perform a database migration safely and have we run one before?",
+        "category": "episodic+procedural",
+        "score": 83,
+        "tokens_used": 712,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What is our process for debugging API performance problems and what performance ",
+        "category": "episodic+procedural",
+        "score": 83,
+        "tokens_used": 639,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What is the release tagging process and what is the current deployed version?",
+        "category": "episodic+procedural",
+        "score": 60,
+        "tokens_used": 750,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What security checks do we run and what vulnerabilities have been found?",
+        "category": "episodic+procedural",
+        "score": 83,
+        "tokens_used": 710,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What does a PR review checklist look like and what has been caught in reviews hi",
+        "category": "episodic+procedural",
+        "score": 83,
+        "tokens_used": 734,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "Who on the team prefers Python and have they worked on CORS-related issues befor",
+        "category": "semantic+episodic",
+        "score": 100,
+        "tokens_used": 702,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What database does the API gateway use and have we had any database problems?",
+        "category": "semantic+episodic",
+        "score": 80,
+        "tokens_used": 645,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "Who owns the API gateway service and what incidents have they handled?",
+        "category": "semantic+episodic",
+        "score": 100,
+        "tokens_used": 684,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What frontend framework are we using and what frontend-related bugs have we seen",
+        "category": "semantic+episodic",
+        "score": 67,
+        "tokens_used": 714,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What is the currently deployed API version and what was in that release?",
+        "category": "semantic+episodic",
+        "score": 80,
+        "tokens_used": 746,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What language does the reviewer prefer and what code issues have they caught?",
+        "category": "semantic+episodic",
+        "score": 83,
+        "tokens_used": 714,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What monitoring tooling do we use and what alerts or incidents has it surfaced?",
+        "category": "semantic+episodic",
+        "score": 100,
+        "tokens_used": 678,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What CI/CD system do we use and how has automation changed our deploy process?",
+        "category": "semantic+episodic",
+        "score": 100,
+        "tokens_used": 772,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What are the team members' language preferences and areas of expertise?",
+        "category": "semantic+episodic",
+        "score": 100,
+        "tokens_used": 721,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What authentication method does the project use and what authentication work has",
+        "category": "semantic+episodic",
+        "score": 100,
+        "tokens_used": 711,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What is our complete deploy process and how has it evolved since the production ",
+        "category": "all",
+        "score": 100,
+        "tokens_used": 751,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "Who should be assigned to fix a Python backend CORS error and what procedure sho",
+        "category": "all",
+        "score": 83,
+        "tokens_used": 688,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "We need a PostgreSQL schema migration \u2014 who handles this, what is the procedure,",
+        "category": "all",
+        "score": 83,
+        "tokens_used": 739,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "Given our monitoring setup and past incidents, what alerts should we prioritise ",
+        "category": "all",
+        "score": 86,
+        "tokens_used": 749,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What is the full picture of the API gateway service: team ownership, current sta",
+        "category": "all",
+        "score": 100,
+        "tokens_used": 676,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "Who leads incident response and what is the full escalation and resolution proce",
+        "category": "all",
+        "score": 100,
+        "tokens_used": 744,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What performance issues have we experienced and what is our complete performance",
+        "category": "all",
+        "score": 83,
+        "tokens_used": 714,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What has the security audit found so far, who runs it, and what is the full secu",
+        "category": "all",
+        "score": 83,
+        "tokens_used": 706,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "How do we tag a release, what version are we on, and what was included in the la",
+        "category": "all",
+        "score": 67,
+        "tokens_used": 800,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      },
+      {
+        "question": "What is the team composition, their individual preferences and expertise, and wh",
+        "category": "all",
+        "score": 100,
+        "tokens_used": 772,
+        "context_snippet": "Agent: planner\nFacts:\n  next_milestone version v1.3.0\n  next_milestone features WebSocket notifications and Redis pub/su"
+      }
+    ]
+  },
+  "token_efficiency": {
+    "avg_tokens": {
+      "progressive": 499.8,
+      "dump_all": 467.0,
+      "baseline": 234.4
+    },
+    "avg_density": {
+      "progressive": 0.16846,
+      "dump_all": 0.17593,
+      "baseline": 0.32265
+    },
+    "per_question": [
+      {
+        "question": "What is our standard deploy process and what errors have we encountered during p",
+        "category": "episodic+procedural",
+        "progressive": {
+          "tokens_used": 500,
+          "quality_score": 67,
+          "information_density": 0.134
+        },
+        "dump_all": {
+          "tokens_used": 474,
+          "quality_score": 67,
+          "information_density": 0.1414
+        },
+        "baseline": {
+          "tokens_used": 236,
+          "quality_score": 50,
+          "information_density": 0.2119
+        }
+      },
+      {
+        "question": "How do we fix CORS errors and has this specific issue come up before in our proj",
+        "category": "episodic+procedural",
+        "progressive": {
+          "tokens_used": 500,
+          "quality_score": 100,
+          "information_density": 0.2
+        },
+        "dump_all": {
+          "tokens_used": 483,
+          "quality_score": 100,
+          "information_density": 0.207
+        },
+        "baseline": {
+          "tokens_used": 244,
+          "quality_score": 100,
+          "information_density": 0.4098
+        }
+      },
+      {
+        "question": "What is our hotfix deploy procedure and when have we actually used it?",
+        "category": "episodic+procedural",
+        "progressive": {
+          "tokens_used": 500,
+          "quality_score": 100,
+          "information_density": 0.2
+        },
+        "dump_all": {
+          "tokens_used": 459,
+          "quality_score": 100,
+          "information_density": 0.2179
+        },
+        "baseline": {
+          "tokens_used": 238,
+          "quality_score": 100,
+          "information_density": 0.4202
+        }
+      },
+      {
+        "question": "How do we respond to production incidents and what incidents have we experienced",
+        "category": "episodic+procedural",
+        "progressive": {
+          "tokens_used": 499,
+          "quality_score": 100,
+          "information_density": 0.2004
+        },
+        "dump_all": {
+          "tokens_used": 474,
+          "quality_score": 100,
+          "information_density": 0.211
+        },
+        "baseline": {
+          "tokens_used": 245,
+          "quality_score": 100,
+          "information_density": 0.4082
+        }
+      },
+      {
+        "question": "What does our code review process look like and what issues have reviewers flagg",
+        "category": "episodic+procedural",
+        "progressive": {
+          "tokens_used": 500,
+          "quality_score": 83,
+          "information_density": 0.166
+        },
+        "dump_all": {
+          "tokens_used": 471,
+          "quality_score": 83,
+          "information_density": 0.1762
+        },
+        "baseline": {
+          "tokens_used": 235,
+          "quality_score": 83,
+          "information_density": 0.3532
+        }
+      },
+      {
+        "question": "How do we perform a database migration safely and have we run one before?",
+        "category": "episodic+procedural",
+        "progressive": {
+          "tokens_used": 500,
+          "quality_score": 83,
+          "information_density": 0.166
+        },
+        "dump_all": {
+          "tokens_used": 453,
+          "quality_score": 83,
+          "information_density": 0.1832
+        },
+        "baseline": {
+          "tokens_used": 219,
+          "quality_score": 83,
+          "information_density": 0.379
+        }
+      },
+      {
+        "question": "What is our process for debugging API performance problems and what performance ",
+        "category": "episodic+procedural",
+        "progressive": {
+          "tokens_used": 500,
+          "quality_score": 83,
+          "information_density": 0.166
+        },
+        "dump_all": {
+          "tokens_used": 481,
+          "quality_score": 83,
+          "information_density": 0.1726
+        },
+        "baseline": {
+          "tokens_used": 248,
+          "quality_score": 50,
+          "information_density": 0.2016
+        }
+      },
+      {
+        "question": "What is the release tagging process and what is the current deployed version?",
+        "category": "episodic+procedural",
+        "progressive": {
+          "tokens_used": 499,
+          "quality_score": 60,
+          "information_density": 0.1202
+        },
+        "dump_all": {
+          "tokens_used": 461,
+          "quality_score": 40,
+          "information_density": 0.0868
+        },
+        "baseline": {
+          "tokens_used": 230,
+          "quality_score": 40,
+          "information_density": 0.1739
+        }
+      },
+      {
+        "question": "What security checks do we run and what vulnerabilities have been found?",
+        "category": "episodic+procedural",
+        "progressive": {
+          "tokens_used": 500,
+          "quality_score": 83,
+          "information_density": 0.166
+        },
+        "dump_all": {
+          "tokens_used": 458,
+          "quality_score": 83,
+          "information_density": 0.1812
+        },
+        "baseline": {
+          "tokens_used": 226,
+          "quality_score": 67,
+          "information_density": 0.2965
+        }
+      },
+      {
+        "question": "What does a PR review checklist look like and what has been caught in reviews hi",
+        "category": "episodic+procedural",
+        "progressive": {
+          "tokens_used": 500,
+          "quality_score": 83,
+          "information_density": 0.166
+        },
+        "dump_all": {
+          "tokens_used": 456,
+          "quality_score": 83,
+          "information_density": 0.182
+        },
+        "baseline": {
+          "tokens_used": 223,
+          "quality_score": 83,
+          "information_density": 0.3722
+        }
+      }
+    ]
+  },
+  "consistency": {
+    "total_reads": 20,
+    "correct_reads": 20,
+    "supersede_reads": 5,
+    "correct_supersede": 5,
+    "conflict_opportunities": 3,
+    "conflicts_detected": 0,
+    "data_loss_count": 0,
+    "ops_completed": 149,
+    "duration_seconds": 6.16
+  }
+}

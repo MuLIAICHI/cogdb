@@ -18,11 +18,18 @@ Suite 3 — Multi-Agent Consistency:
     3 concurrent threads (planner, coder, reviewer), 50 ops each.
     Measures: consistency_score, data_loss_score, conflict_resolution_accuracy.
 
+Suite 4 — Throughput:
+    Measures raw write/search/scan latency (ms/op) and ops/sec.
+    Two modes per operation:
+      full-pipeline — includes Python sentence-transformers encoding step.
+      raw-storage   — pre-computed embedding, isolates pure Rust I/O cost.
+
 Usage:
     python -m benchmarks.cogdb_bench --suite all
     python -m benchmarks.cogdb_bench --suite tri-memory
     python -m benchmarks.cogdb_bench --suite token-efficiency
     python -m benchmarks.cogdb_bench --suite consistency
+    python -m benchmarks.cogdb_bench --suite throughput
     python -m benchmarks.cogdb_bench --suite all --no-llm   # skip OpenAI, use keyword fallback
     python -m benchmarks.cogdb_bench --suite all --out results/my_run.json
 
@@ -533,6 +540,56 @@ class TokenEfficiencyResult:
 
 
 @dataclass
+class ThroughputResult:
+    """Raw latency and throughput numbers for Suite 4."""
+    n_episodic: int = 0
+    n_semantic: int = 0
+    n_procedural: int = 0
+    n_search: int = 0
+    n_scan: int = 0
+
+    # Full-pipeline timings (includes Python embedding step)
+    write_episodic_total_ms: float = 0.0   # db.remember() × n_episodic
+    search_total_ms: float = 0.0           # db.recall()   × n_search
+
+    # Raw storage timings (pre-computed embeddings, pure Rust I/O)
+    write_episodic_raw_total_ms: float = 0.0  # _episodic.add() × n_episodic
+    write_semantic_total_ms: float = 0.0      # db.learn()      × n_semantic
+    write_procedural_total_ms: float = 0.0    # db.learn_procedure() × n_procedural
+    search_raw_total_ms: float = 0.0          # _episodic.search() with pre-computed emb
+    scan_batch_total_ms: float = 0.0          # scan_batch(limit=100) × n_scan
+
+    @property
+    def write_episodic_ms(self) -> float:
+        return self.write_episodic_total_ms / max(1, self.n_episodic)
+
+    @property
+    def write_episodic_raw_ms(self) -> float:
+        return self.write_episodic_raw_total_ms / max(1, self.n_episodic)
+
+    @property
+    def write_semantic_ms(self) -> float:
+        return self.write_semantic_total_ms / max(1, self.n_semantic)
+
+    @property
+    def write_procedural_ms(self) -> float:
+        return self.write_procedural_total_ms / max(1, self.n_procedural)
+
+    @property
+    def search_ms(self) -> float:
+        return self.search_total_ms / max(1, self.n_search)
+
+    @property
+    def search_raw_ms(self) -> float:
+        return self.search_raw_total_ms / max(1, self.n_search)
+
+    @property
+    def scan_ops_per_sec(self) -> float:
+        total_s = self.scan_batch_total_ms / 1000.0
+        return round(self.n_scan * 100 / max(0.001, total_s), 1)  # 100 rows/scan
+
+
+@dataclass
 class ConsistencyResult:
     total_reads: int = 0
     correct_reads: int = 0
@@ -764,6 +821,150 @@ def run_token_efficiency_suite(
     return result
 
 
+# ── Suite 4: Throughput ───────────────────────────────────────────────────────
+
+def _median_ms(samples: list[float]) -> float:
+    s = sorted(samples)
+    n = len(s)
+    return (s[n // 2] if n % 2 else (s[n // 2 - 1] + s[n // 2]) / 2) * 1000
+
+
+def run_throughput_suite(n_write: int = 100, n_search: int = 50, n_scan: int = 20) -> ThroughputResult:
+    """Measure raw write, search, and scan latency against the Rust storage engine.
+
+    Two timing modes per operation:
+      full-pipeline — goes through db.remember() / db.recall(), includes the
+                      Python sentence-transformers embedding step.
+      raw-storage   — bypasses encoding: pre-computed embeddings go directly
+                      to the store, isolating pure Rust I/O cost.
+
+    Args:
+        n_write:  Number of episodic write operations to time.
+        n_search: Number of search queries to time.
+        n_scan:   Number of scan_batch() calls (100 rows each) to time.
+    """
+    import statistics
+    from cogdb.models import MemoryUnit, MemoryType, MemoryScope, SemanticTriple, ProcedureStep, ProcedureTemplate
+
+    print(f"\n[Suite 4] Throughput — {n_write} writes · {n_search} searches · {n_scan} scans")
+    result = ThroughputResult(
+        n_episodic=n_write,
+        n_semantic=n_write,
+        n_procedural=max(1, n_write // 5),
+        n_search=n_search,
+        n_scan=n_scan,
+    )
+    tmpdir = tempfile.mkdtemp(prefix="cogdb_bench_throughput_")
+
+    try:
+        db = CognitiveDB(db_path=tmpdir)
+
+        # ── Warm-up: load the embedding model once ────────────────────────────
+        print("  [warm-up] loading embedding model…", end=" ", flush=True)
+        t_wu = time.perf_counter()
+        db.remember(content="warm-up", agent_id="bench", importance=0.5)
+        sample_emb = db._episodic._encoder.embed_query("warm-up query")
+        print(f"done ({(time.perf_counter() - t_wu) * 1000:.0f} ms)")
+
+        # ── 1. Full-pipeline episodic write (db.remember, includes encoding) ──
+        print(f"  [1/5] full-pipeline write × {n_write}…", end=" ", flush=True)
+        samples_full_write: list[float] = []
+        for i in range(n_write):
+            t0 = time.perf_counter()
+            db.remember(
+                content=f"Throughput bench event {i}: operation completed at step {i * 7}",
+                agent_id="bench",
+                importance=0.5 + (i % 5) * 0.1,
+                scope=MemoryScope.PRIVATE,
+            )
+            samples_full_write.append(time.perf_counter() - t0)
+        result.write_episodic_total_ms = sum(samples_full_write) * 1000
+        med = _median_ms(samples_full_write)
+        print(f"median {med:.1f} ms/op  ({1000 / med:.0f} ops/s)")
+
+        # ── 2. Raw-storage episodic write (pre-computed embedding) ────────────
+        print(f"  [2/5] raw-storage write  × {n_write}…", end=" ", flush=True)
+        samples_raw_write: list[float] = []
+        for i in range(n_write):
+            unit = MemoryUnit(
+                content=f"Raw write bench {i}",
+                memory_type=MemoryType.EPISODIC,
+                agent_id="bench_raw",
+                importance=0.5,
+                embedding=sample_emb,
+            )
+            t0 = time.perf_counter()
+            db._episodic.add(unit)
+            samples_raw_write.append(time.perf_counter() - t0)
+        result.write_episodic_raw_total_ms = sum(samples_raw_write) * 1000
+        med = _median_ms(samples_raw_write)
+        print(f"median {med:.1f} ms/op  ({1000 / med:.0f} ops/s)")
+
+        # ── 3. Semantic write ─────────────────────────────────────────────────
+        print(f"  [3/5] semantic write     × {result.n_semantic}…", end=" ", flush=True)
+        samples_sem: list[float] = []
+        for i in range(result.n_semantic):
+            t0 = time.perf_counter()
+            db.learn(
+                subject=f"entity_{i}",
+                predicate="bench_rel",
+                object=f"value_{i}",
+                agent_id="bench",
+                confidence=0.9,
+            )
+            samples_sem.append(time.perf_counter() - t0)
+        result.write_semantic_total_ms = sum(samples_sem) * 1000
+        med = _median_ms(samples_sem)
+        print(f"median {med:.1f} ms/op  ({1000 / med:.0f} ops/s)")
+
+        # ── 4. Full-pipeline search (includes encoding) ───────────────────────
+        print(f"  [4/5] full-pipeline search × {n_search}…", end=" ", flush=True)
+        samples_search: list[float] = []
+        queries = [f"operation at step {i * 7}" for i in range(n_search)]
+        for q in queries:
+            t0 = time.perf_counter()
+            db.recall(query=q, agent_id="bench", token_budget=500,
+                      memory_types=[MemoryType.EPISODIC])
+            samples_search.append(time.perf_counter() - t0)
+        result.search_total_ms = sum(samples_search) * 1000
+        med = _median_ms(samples_search)
+        print(f"median {med:.1f} ms/op  ({1000 / med:.0f} ops/s)")
+
+        # ── 5. Raw-storage search (pre-computed embedding) ────────────────────
+        print(f"  [5/5] raw-storage search × {n_search}…", end=" ", flush=True)
+        samples_raw_search: list[float] = []
+        for q in queries:
+            emb = db._episodic._encoder.embed_query(q)
+            t0 = time.perf_counter()
+            db._episodic.search(query=q, agent_id="bench", top_k=10,
+                                query_embedding=emb)
+            samples_raw_search.append(time.perf_counter() - t0)
+        result.search_raw_total_ms = sum(samples_raw_search) * 1000
+        med = _median_ms(samples_raw_search)
+        print(f"median {med:.1f} ms/op  ({1000 / med:.0f} ops/s)")
+
+        # ── 6. Scan batch ─────────────────────────────────────────────────────
+        print(f"  [scan ] scan_batch(100)  × {n_scan}…", end=" ", flush=True)
+        samples_scan: list[float] = []
+        for _ in range(n_scan):
+            t0 = time.perf_counter()
+            db._episodic.scan_batch(agent_id=None, limit=100, offset=0)
+            samples_scan.append(time.perf_counter() - t0)
+        result.scan_batch_total_ms = sum(samples_scan) * 1000
+        med = _median_ms(samples_scan)
+        print(f"median {med:.1f} ms  ({result.scan_ops_per_sec:.0f} rows/s)")
+
+    finally:
+        try:
+            db._episodic._client.reset()
+        except Exception:
+            pass
+        gc.collect()
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+    return result
+
+
 # ── Suite 3: Multi-Agent Consistency ──────────────────────────────────────────
 
 _GROUND_TRUTH: list[tuple[str, str, str]] = [
@@ -974,6 +1175,7 @@ def print_report(
     tri: Optional[TriMemoryResult],
     tok: Optional[TokenEfficiencyResult],
     con: Optional[ConsistencyResult],
+    thr: Optional[ThroughputResult] = None,
 ) -> None:
     SEP = "─" * 70
     print(f"\n{'═' * 70}")
@@ -1017,19 +1219,58 @@ def print_report(
             print(f"  {name:22s}  {val:5.1%}  {bar}  ({desc})")
         print(f"  ops={con.ops_completed}  duration={con.duration_seconds}s")
 
+    if thr:
+        print(f"\n{'─' * 70}")
+        print("  SUITE 4 — Throughput  (median latency per operation)")
+        print(SEP)
+        enc_cost = thr.write_episodic_ms - thr.write_episodic_raw_ms
+        enc_search_cost = thr.search_ms - thr.search_raw_ms
+        rows = [
+            ("Operation",             "Full pipeline", "Raw storage", "Encoding cost"),
+            ("─" * 26,               "─" * 14,        "─" * 12,     "─" * 13),
+            ("episodic write",
+             f"{thr.write_episodic_ms:6.1f} ms/op",
+             f"{thr.write_episodic_raw_ms:6.1f} ms/op",
+             f"~{max(0.0, enc_cost):5.1f} ms"),
+            ("semantic write",
+             f"{thr.write_semantic_ms:6.1f} ms/op",
+             "        —",
+             "        —"),
+            ("search (recall)",
+             f"{thr.search_ms:6.1f} ms/op",
+             f"{thr.search_raw_ms:6.1f} ms/op",
+             f"~{max(0.0, enc_search_cost):5.1f} ms"),
+            ("scan_batch (100 rows)",
+             f"{thr.scan_batch_total_ms / max(1, thr.n_scan):6.1f} ms/call",
+             f"({thr.scan_ops_per_sec:.0f} rows/s)",
+             "        —"),
+        ]
+        col_w = [26, 16, 14, 13]
+        for row in rows:
+            print("  " + "  ".join(str(cell).ljust(w) for cell, w in zip(row, col_w)))
+        total_writes = thr.n_episodic + thr.n_semantic
+        print(f"\n  Rust storage writes:  {thr.write_episodic_raw_ms:.1f} ms median "
+              f"  ({1000 / max(0.1, thr.write_episodic_raw_ms):.0f} ops/s)")
+        print(f"  Encoding overhead:    ~{max(0.0, enc_cost):.1f} ms per write, "
+              f"~{max(0.0, enc_search_cost):.1f} ms per search")
+
     print(f"\n{'═' * 70}\n")
 
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
 
 def main() -> None:
+    import sys
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     parser = argparse.ArgumentParser(
         description="CogDB benchmark suite",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "--suite",
-        choices=["all", "tri-memory", "token-efficiency", "consistency"],
+        choices=["all", "tri-memory", "token-efficiency", "consistency", "throughput"],
         default="all",
         help="Which suite to run (default: all)",
     )
@@ -1057,10 +1298,12 @@ def main() -> None:
     run_tri = args.suite in ("all", "tri-memory")
     run_tok = args.suite in ("all", "token-efficiency")
     run_con = args.suite in ("all", "consistency")
+    run_thr = args.suite in ("all", "throughput")
 
     tri_result: Optional[TriMemoryResult] = None
     tok_result: Optional[TokenEfficiencyResult] = None
     con_result: Optional[ConsistencyResult] = None
+    thr_result: Optional[ThroughputResult] = None
 
     # Suites 1 and 2 share a populated database
     if run_tri or run_tok:
@@ -1089,7 +1332,10 @@ def main() -> None:
     if run_con:
         con_result = run_consistency_suite()
 
-    print_report(tri_result, tok_result, con_result)
+    if run_thr:
+        thr_result = run_throughput_suite()
+
+    print_report(tri_result, tok_result, con_result, thr_result)
 
     # ── Write JSON results ─────────────────────────────────────────────────────
     out_path = args.out
@@ -1118,6 +1364,8 @@ def main() -> None:
         }
     if con_result:
         payload["consistency"] = asdict(con_result)
+    if thr_result:
+        payload["throughput"] = asdict(thr_result)
 
     with open(out_path, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, indent=2)

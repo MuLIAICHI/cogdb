@@ -40,11 +40,24 @@ class CogDBConfig:
     contradiction_check: bool = True
     max_results_per_store: int = 20
 
-    # ChromaDB settings
+    # Retrieval blending: weight given to HNSW similarity rank in final sort.
+    # 0.0 = pure importance ranking; 0.2 = 20% HNSW relevance + 80% importance.
+    hnsw_blend_alpha: float = 0.2
+
+    # Maximum number of procedural memories included per recall() call.
+    # Keeps procedures from crowding out episodic memories in the token budget.
+    # 1 is the right default: the most relevant procedure is selected via
+    # match-count sorting; additional procedures displace episodic memories.
+    max_procedures_per_query: int = 1
+
+    # ChromaDB settings (kept for config compatibility)
     chroma_collection_name: str = "cogdb_episodic"
 
     # Agent identity defaults
     default_agent_id: str = "default"
+
+    # Consolidation: enable optional LLM-powered SPO extraction (requires API key).
+    use_llm_consolidation: bool = False
 
     def ensure_dirs(self) -> None:
         """Create storage directories if they don't exist."""
