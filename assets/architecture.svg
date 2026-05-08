@@ -1,0 +1,133 @@
+<svg width="900" height="540" viewBox="0 0 900 540" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <defs>
+    <linearGradient id="layerBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a0a"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+    <linearGradient id="greenAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="540" fill="#000"/>
+
+  <!-- Grid pattern background -->
+  <g opacity="0.05">
+    <line x1="0" y1="50" x2="900" y2="50" stroke="#10b981" stroke-width="0.5"/>
+    <line x1="0" y1="150" x2="900" y2="150" stroke="#10b981" stroke-width="0.5"/>
+    <line x1="0" y1="250" x2="900" y2="250" stroke="#10b981" stroke-width="0.5"/>
+    <line x1="0" y1="350" x2="900" y2="350" stroke="#10b981" stroke-width="0.5"/>
+    <line x1="0" y1="450" x2="900" y2="450" stroke="#10b981" stroke-width="0.5"/>
+  </g>
+
+  <!-- Layer 1: Agent Interface -->
+  <g transform="translate(30, 30)">
+    <rect width="840" height="80" rx="6" fill="#0a0a0a" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.6"/>
+    <text x="20" y="30" font-family="ui-monospace, monospace" font-size="11" fill="#10b981" letter-spacing="2" opacity="0.6">LAYER 01</text>
+    <text x="20" y="58" font-family="ui-monospace, monospace" font-size="22" fill="#fff" font-weight="600">AGENT INTERFACE</text>
+
+    <!-- Agent integration boxes -->
+    <g transform="translate(420, 20)">
+      <rect width="90" height="40" rx="4" fill="none" stroke="#10b981" stroke-width="1"/>
+      <text x="45" y="25" font-family="ui-monospace, monospace" font-size="11" fill="#10b981" text-anchor="middle">AutoGen</text>
+    </g>
+    <g transform="translate(520, 20)">
+      <rect width="90" height="40" rx="4" fill="none" stroke="#10b981" stroke-width="1"/>
+      <text x="45" y="25" font-family="ui-monospace, monospace" font-size="11" fill="#10b981" text-anchor="middle">LangGraph</text>
+    </g>
+    <g transform="translate(620, 20)">
+      <rect width="90" height="40" rx="4" fill="none" stroke="#10b981" stroke-width="1"/>
+      <text x="45" y="25" font-family="ui-monospace, monospace" font-size="11" fill="#10b981" text-anchor="middle">MCP Server</text>
+    </g>
+    <g transform="translate(720, 20)">
+      <rect width="100" height="40" rx="4" fill="none" stroke="#10b981" stroke-width="1"/>
+      <text x="50" y="25" font-family="ui-monospace, monospace" font-size="11" fill="#10b981" text-anchor="middle">Python SDK</text>
+    </g>
+  </g>
+
+  <!-- Connection arrows down -->
+  <g stroke="#10b981" stroke-width="1" opacity="0.4">
+    <line x1="450" y1="115" x2="450" y2="135"/>
+    <polygon points="450,135 446,128 454,128" fill="#10b981"/>
+  </g>
+
+  <!-- Layer 2: Query Planner -->
+  <g transform="translate(30, 145)">
+    <rect width="840" height="80" rx="6" fill="#0a0a0a" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.6"/>
+    <text x="20" y="30" font-family="ui-monospace, monospace" font-size="11" fill="#10b981" letter-spacing="2" opacity="0.6">LAYER 02</text>
+    <text x="20" y="58" font-family="ui-monospace, monospace" font-size="22" fill="#fff" font-weight="600">QUERY PLANNER</text>
+
+    <!-- Features -->
+    <g transform="translate(420, 25)">
+      <text x="0" y="15" font-family="ui-monospace, monospace" font-size="12" fill="#34d399">▸ Token-aware retrieval</text>
+      <text x="0" y="35" font-family="ui-monospace, monospace" font-size="12" fill="#34d399">▸ Progressive loading L0 → L3</text>
+      <text x="220" y="15" font-family="ui-monospace, monospace" font-size="12" fill="#34d399">▸ Cross-store routing</text>
+      <text x="220" y="35" font-family="ui-monospace, monospace" font-size="12" fill="#34d399">▸ Result merging</text>
+    </g>
+  </g>
+
+  <g stroke="#10b981" stroke-width="1" opacity="0.4">
+    <line x1="450" y1="230" x2="450" y2="250"/>
+    <polygon points="450,250 446,243 454,243" fill="#10b981"/>
+  </g>
+
+  <!-- Layer 3: Cognitive Pipeline -->
+  <g transform="translate(30, 260)">
+    <rect width="840" height="80" rx="6" fill="#0a0a0a" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.6"/>
+    <text x="20" y="30" font-family="ui-monospace, monospace" font-size="11" fill="#10b981" letter-spacing="2" opacity="0.6">LAYER 03</text>
+    <text x="20" y="58" font-family="ui-monospace, monospace" font-size="22" fill="#fff" font-weight="600">COGNITIVE PIPELINE</text>
+
+    <g transform="translate(420, 30)">
+      <text x="0" y="15" font-family="ui-monospace, monospace" font-size="11" fill="#34d399">Encode</text>
+      <text x="80" y="15" font-family="ui-monospace, monospace" font-size="11" fill="#34d399">→ Store</text>
+      <text x="160" y="15" font-family="ui-monospace, monospace" font-size="11" fill="#34d399">→ Consolidate</text>
+      <text x="270" y="15" font-family="ui-monospace, monospace" font-size="11" fill="#34d399">→ Retrieve</text>
+      <text x="370" y="15" font-family="ui-monospace, monospace" font-size="11" fill="#34d399">→ Decay</text>
+    </g>
+  </g>
+
+  <g stroke="#10b981" stroke-width="1" opacity="0.4">
+    <line x1="450" y1="345" x2="450" y2="365"/>
+    <polygon points="450,365 446,358 454,358" fill="#10b981"/>
+  </g>
+
+  <!-- Layer 4: Three Memory Stores -->
+  <g transform="translate(30, 375)">
+    <text x="0" y="15" font-family="ui-monospace, monospace" font-size="11" fill="#10b981" letter-spacing="2" opacity="0.6">LAYER 04 — TRI-MEMORY STORE</text>
+
+    <!-- Episodic -->
+    <g transform="translate(0, 30)">
+      <rect width="270" height="120" rx="6" fill="#0a0a0a" stroke="#10b981" stroke-width="1.5"/>
+      <circle cx="30" cy="30" r="6" fill="#10b981"/>
+      <text x="50" y="35" font-family="ui-monospace, monospace" font-size="16" fill="#fff" font-weight="600">EPISODIC</text>
+      <text x="20" y="65" font-family="ui-monospace, monospace" font-size="11" fill="#34d399" opacity="0.8">What happened</text>
+      <text x="20" y="85" font-family="ui-monospace, monospace" font-size="10" fill="#666">Vector embeddings</text>
+      <text x="20" y="100" font-family="ui-monospace, monospace" font-size="10" fill="#666">Timestamped events</text>
+      <text x="20" y="115" font-family="ui-monospace, monospace" font-size="10" fill="#666">Similarity search</text>
+    </g>
+
+    <!-- Semantic -->
+    <g transform="translate(285, 30)">
+      <rect width="270" height="120" rx="6" fill="#0a0a0a" stroke="#10b981" stroke-width="1.5"/>
+      <circle cx="30" cy="30" r="6" fill="#10b981"/>
+      <text x="50" y="35" font-family="ui-monospace, monospace" font-size="16" fill="#fff" font-weight="600">SEMANTIC</text>
+      <text x="20" y="65" font-family="ui-monospace, monospace" font-size="11" fill="#34d399" opacity="0.8">What is known</text>
+      <text x="20" y="85" font-family="ui-monospace, monospace" font-size="10" fill="#666">Knowledge graph</text>
+      <text x="20" y="100" font-family="ui-monospace, monospace" font-size="10" fill="#666">Temporal facts</text>
+      <text x="20" y="115" font-family="ui-monospace, monospace" font-size="10" fill="#666">Auto-supersession</text>
+    </g>
+
+    <!-- Procedural -->
+    <g transform="translate(570, 30)">
+      <rect width="270" height="120" rx="6" fill="#0a0a0a" stroke="#10b981" stroke-width="1.5"/>
+      <circle cx="30" cy="30" r="6" fill="#10b981"/>
+      <text x="50" y="35" font-family="ui-monospace, monospace" font-size="16" fill="#fff" font-weight="600">PROCEDURAL</text>
+      <text x="20" y="65" font-family="ui-monospace, monospace" font-size="11" fill="#34d399" opacity="0.8">How to do things</text>
+      <text x="20" y="85" font-family="ui-monospace, monospace" font-size="10" fill="#666">Workflow templates</text>
+      <text x="20" y="100" font-family="ui-monospace, monospace" font-size="10" fill="#666">Success tracking</text>
+      <text x="20" y="115" font-family="ui-monospace, monospace" font-size="10" fill="#666">Reusable patterns</text>
+    </g>
+  </g>
+</svg>
