@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-10b981.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-10b981.svg?style=flat-square)](https://www.python.org/downloads/)
-[![Status: Phase 0](https://img.shields.io/badge/status-v0.1.0-10b981.svg?style=flat-square)](#roadmap)
+[![Status: v0.4.0](https://img.shields.io/badge/status-v0.4.0-10b981.svg?style=flat-square)](#roadmap)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-10b981.svg?style=flat-square)](#contributing)
 
 **A second brain for AI agents — episodic, semantic, and procedural memory in one engine.**
@@ -237,16 +237,11 @@ Contradiction detection runs at write time. Conflict resolution handles concurre
 
 ## 🗺 Roadmap
 
-CogDB is in **Phase 0** — a Python proof-of-concept that proves the core ideas work.
-
-- ✅ **Phase 0 — Python PoC.** Tri-memory engine, adapters, MCP server. *(Current)*
-- 🚧 **Phase 0.5 — Validation.** Production dogfooding via [CogBoard](https://github.com/MuLIAICHI/cogboard), benchmarks vs Mem0/Zep/MemPalace.
-- 📋 **Phase 1 — Rust Engine.** Purpose-built storage with hybrid indexes (HNSW + B+Tree + adjacency lists), WAL, crash recovery.
-- 📋 **Phase 2 — Self-Improving.** Internal ML models for retrieval optimization, consolidation, access prediction, importance scoring.
-- 💭 **Phase 3 — Agent-Native Evolution.** Agents define and evolve schemas through interaction.
-- 💭 **Phase 4 — Predictive Memory.** Consequence prediction inspired by LeCun's JEPA — agents simulate outcomes before acting.
-
-Full roadmap with status tracking → [BACKLOG.md](./BACKLOG.md)
+- ✅ **Phase 0 — Python PoC** `v0.2.0` — Tri-memory engine, pipeline, AutoGen + LangGraph + MCP adapters.
+- ✅ **Phase 1 — Rust Engine** `v0.3.0` — Purpose-built storage with HNSW, WAL, crash recovery, PyO3 bindings.
+- ✅ **Phase 2 — ML Retrieval** `v0.4.0` — Learned importance model, HNSW rank blending, tokenised procedure search. Suite 1 benchmark: **90.7 / 100**.
+- 🔄 **Phase 3 — Schema Evolution** *(in progress)* — Typed metadata schemas (3A shipped), metadata indexing (3B), migration tooling (3C).
+- 📋 **Phase 4 — Distributed** — Clustered WAL replication, multi-node deployment.
 
 ## 📚 Research
 
