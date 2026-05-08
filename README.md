@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/banner.svg" alt="CogDB — A Cognitive Database for AI Agents" width="100%"/>
+<img src="./assets/banner.png" alt="CogDB — A Cognitive Database for AI Agents" width="100%"/>
 
 <br/>
 
@@ -75,7 +75,7 @@ Learned workflows captured from successful agent task completions. Reusable temp
 
 <div align="center">
 
-<img src="./assets/architecture.svg" alt="CogDB Architecture" width="100%"/>
+<img src="./assets/architecture.png" alt="CogDB Architecture" width="100%"/>
 
 </div>
 
