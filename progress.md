@@ -1,6 +1,6 @@
 # CogDB — Build Progress
 
-Last updated: 2026-05-08 (session 10)
+Last updated: 2026-05-08 (session 11)
 
 ---
 
@@ -11,7 +11,7 @@ Last updated: 2026-05-08 (session 10)
 | 0 — Python PoC | v0.2.0 | ✅ Complete | Tri-memory stores, pipeline, adapters, benchmarks |
 | 1 — Rust engine | v0.3.0 | ✅ Complete | cogdb_engine crate, WAL, PyO3 bindings, 140 tests green |
 | 2 — ML retrieval | v0.4.0 | ✅ Complete | ImportanceModel + HNSW blending + tokenised procedure retrieval; Suite 1 = 90.7/100 |
-| 3 — Schema evolution | — | future | Agent-driven schema changes |
+| 3 — Schema evolution | — | 🔄 In progress | Phase 3A: dynamic typed metadata schemas shipped |
 | 4 — Distributed | — | future | Clustered WAL replication |
 
 ---
@@ -119,11 +119,41 @@ Run: `python -m benchmarks.cogdb_bench --suite all --no-llm`
 | `tests/test_langgraph_adapter.py` | — | ✅ |
 | `tests/test_mcp_adapter.py` | — | ✅ |
 | `tests/test_importance_model.py` | 31 | ✅ |
-| **Total** | **171** | **✅ all green** |
+| `tests/test_schema_registry.py` | 36 | ✅ |
+| **Total** | **207** | **✅ all green** |
+
+---
+
+## Phase 3 — Schema Evolution (In Progress)
+
+### Phase 3A — Dynamic Typed Metadata Schemas ✅
+
+| # | File | Status | Notes |
+|---|------|--------|-------|
+| 1 | `cogdb/schema/__init__.py` | ✅ | `FieldSchema`, `MetadataSchema`, `SchemaValidationError`. Supported types: str, int, float, bool, list, dict, any. |
+| 2 | `cogdb/schema/registry.py` | ✅ | `SchemaRegistry` — register/get/list/validate/persist. Stored at `{db_path}/schemas.json`. |
+| 3 | `cogdb/utils/config.py` | ✅ | Added `strict_metadata_validation: bool = True`. |
+| 4 | `cogdb/core.py` | ✅ | `register_schema()`, `get_schema()`, `list_schemas()`. Validation wired into `remember()`. |
+| 5 | `tests/test_schema_registry.py` | ✅ | 36 tests — FieldSchema, MetadataSchema, error format, validate, strict/non-strict, persistence roundtrip, CognitiveDB integration. |
+
+**Scope (3A only):** episodic memory metadata. Semantic triples and procedural step parameters out of scope until 3B/3C.
+
+### Phase 3B — Metadata Indexing (future)
+Add SQLite indexes on commonly queried metadata keys. Requires Rust store changes.
+
+### Phase 3C — Schema Migration (future)
+Safe field rename/add/drop with version tracking. Version counter already written to `schemas.json` as a hook.
 
 ---
 
 ## Architecture Decisions Log
+
+### 2026-05-08 (Phase 3A — session 11)
+- **Dynamic typed metadata schemas**: `cogdb/schema/` module — `FieldSchema` (7 supported types), `MetadataSchema` (keyed by agent_id), `SchemaValidationError` with field-level error list.
+- **SchemaRegistry**: persist to `{db_path}/schemas.json`; validate per-field with type-aware checking (bool vs int subclass handled correctly); re-registration bumps `version` as migration hook for Phase 3C.
+- **Strict mode** (default `True`): raises `SchemaValidationError` on violation; `False` runs validation silently — configurable via `config.strict_metadata_validation`.
+- **Scope**: episodic-only. Semantic and procedural metadata validation deferred to later phases.
+- **207/207 tests green** ✅
 
 ### 2026-05-07 (Phase 2 — session 10)
 - **Root cause found (session 10)**: `search_by_context` Rust SQL uses `WHERE applicable_contexts LIKE '%{full_query}%'` — the entire question string is the pattern, which never matches single-word context lists. Procedures were silently absent from ALL retrieval results, producing the identical `84.2 → 84.2` score across baseline and Phase 2.

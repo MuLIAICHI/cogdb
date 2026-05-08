@@ -32,7 +32,10 @@ cogdb/                           ← Python package (public API)
 │   ├── langgraph.py             ← LangGraph BaseCheckpointSaver + BaseStore
 │   └── mcp.py                   ← MCP server (6 tools, cogdb-mcp CLI)
 ├── models/
-│   └── importance.py            ← Heuristic scoring (Phase 2: ML model)
+│   └── importance.py            ← ImportanceModel (Ridge regression, Phase 2)
+├── schema/
+│   ├── __init__.py              ← FieldSchema, MetadataSchema, SchemaValidationError
+│   └── registry.py             ← SchemaRegistry (persist schemas.json, validate)
 └── utils/
     ├── tokenizer.py             ← tiktoken token counting
     └── config.py                ← CogDBConfig dataclass
@@ -73,7 +76,7 @@ maturin develop --release   # installs cogdb_engine.pyd into active venv
 | 0 — Python PoC | ✅ v0.2.0 | Tri-memory stores, pipeline, adapters |
 | 1 — Rust engine | ✅ v0.3.0 | cogdb_engine crate, WAL, PyO3 bindings |
 | 2 — ML retrieval | ✅ v0.4.0 | ImportanceModel, HNSW blend, tokenised proc retrieval; Suite 1 = 90.7/100 |
-| 3 — Schema evolution | 🔄 current | Agent-driven schema changes |
+| 3 — Schema evolution | 🔄 current | 3A done: typed metadata schemas; 3B: indexing; 3C: migration |
 | 4 — Distributed | future | Clustered deployment, WAL replication |
 
 ---

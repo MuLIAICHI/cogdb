@@ -50,6 +50,10 @@ class CogDBConfig:
     # match-count sorting; additional procedures displace episodic memories.
     max_procedures_per_query: int = 1
 
+    # Schema validation: raise SchemaValidationError on metadata violations.
+    # Set to False to demote violations to silent no-ops (warn-only mode).
+    strict_metadata_validation: bool = True
+
     # ChromaDB settings (kept for config compatibility)
     chroma_collection_name: str = "cogdb_episodic"
 

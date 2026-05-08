@@ -20,6 +20,8 @@ from cogdb.models import (
     SemanticTriple,
 )
 from cogdb.pipeline.retriever import Retriever
+from cogdb.schema import MetadataSchema
+from cogdb.schema.registry import SchemaRegistry
 from cogdb.stores.episodic import EpisodicStore
 from cogdb.stores.procedural import ProceduralStore
 from cogdb.stores.semantic import SemanticStore
@@ -74,6 +76,12 @@ class CognitiveDB:
             self._episodic, self._semantic, self._procedural, config
         )
 
+        # Initialize schema registry
+        self._schema_registry = SchemaRegistry(
+            db_path=config.db_path,
+            strict=config.strict_metadata_validation,
+        )
+
     # ── Episodic Memory ─────────────────────────────────────────
 
     def remember(
@@ -108,13 +116,18 @@ class CognitiveDB:
             ...     metadata={"error_type": "config", "service": "api"},
             ... )
         """
+        resolved_agent = agent_id or self._config.default_agent_id
+        resolved_metadata = metadata or {}
+
+        self._schema_registry.validate_and_raise(resolved_metadata, resolved_agent)
+
         unit = MemoryUnit(
             content=content,
             memory_type=memory_type,
-            agent_id=agent_id or self._config.default_agent_id,
+            agent_id=resolved_agent,
             importance=importance,
             scope=scope,
-            metadata=metadata or {},
+            metadata=resolved_metadata,
             team_id=team_id,
         )
         return self._episodic.add(unit)
@@ -343,6 +356,61 @@ class CognitiveDB:
             token_budget=token_budget,
             identity=identity,
         )
+
+    # ── Schema Registry ─────────────────────────────────────────
+
+    def register_schema(self, schema: MetadataSchema) -> None:
+        """Register or update the typed metadata schema for an agent.
+
+        Once registered, every call to ``remember()`` for this agent will
+        validate the provided metadata against the schema. Re-registering
+        overwrites the existing schema and increments the version counter.
+
+        Args:
+            schema: The MetadataSchema to register.
+
+        Returns:
+            None
+
+        Example:
+            >>> from cogdb.schema import MetadataSchema, FieldSchema
+            >>> db.register_schema(MetadataSchema(
+            ...     agent_id="devops-agent",
+            ...     fields={
+            ...         "tool":      FieldSchema(type="str", required=True),
+            ...         "exit_code": FieldSchema(type="int", required=False, default=0),
+            ...     },
+            ... ))
+        """
+        self._schema_registry.register(schema)
+
+    def get_schema(self, agent_id: str) -> Optional[MetadataSchema]:
+        """Retrieve the registered metadata schema for an agent.
+
+        Args:
+            agent_id: The agent whose schema to retrieve.
+
+        Returns:
+            MetadataSchema if registered, None otherwise.
+
+        Example:
+            >>> schema = db.get_schema("devops-agent")
+            >>> if schema:
+            ...     print(f"v{schema.version}: {list(schema.fields)}")
+        """
+        return self._schema_registry.get(agent_id)
+
+    def list_schemas(self) -> list[MetadataSchema]:
+        """Return all registered metadata schemas, sorted by agent_id.
+
+        Returns:
+            List of MetadataSchema instances.
+
+        Example:
+            >>> for s in db.list_schemas():
+            ...     print(s.agent_id, "v" + str(s.version))
+        """
+        return self._schema_registry.list_schemas()
 
     # ── Utilities ───────────────────────────────────────────────
 
