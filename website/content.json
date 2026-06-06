@@ -1,0 +1,170 @@
+{
+  "meta": {
+    "title": "CogDB — A Second Brain for AI Agents",
+    "description": "The only database that gives AI agents episodic, semantic, and procedural memory — all in one engine. One install, one interface, one data store.",
+    "og_image": "assets/banner.png",
+    "github": "https://github.com/MuLIAICHI/cogdb",
+    "author": "Mustapha Liaichi",
+    "email": "mustapha@ayautomate.com",
+    "version": "v0.4.0",
+    "license": "MIT"
+  },
+  "hero": {
+    "headline": "A Second Brain for AI Agents",
+    "subheadline": "The only database that gives AI agents episodic, semantic, and procedural memory — all in one engine.",
+    "cta_primary": {
+      "text": "Get Started →",
+      "url": "https://github.com/MuLIAICHI/cogdb"
+    },
+    "cta_secondary": {
+      "text": "View Docs",
+      "url": "docs/"
+    },
+    "badge": "90.7 / 100 on tri-memory benchmark"
+  },
+  "problem": {
+    "headline": "Every AI agent framework treats memory as someone else's problem.",
+    "body": "You bolt on a vector database. Then a graph DB for relationships. Then SQLite for structured stuff. Now you're maintaining three backends that don't talk to each other — and when two agents update the same fact at the same time, things break silently.",
+    "points": [
+      {
+        "icon": "⚠️",
+        "title": "Three backends, zero coordination",
+        "description": "Vector DB + graph DB + SQLite — maintained separately, queried separately, breaking separately."
+      },
+      {
+        "icon": "💥",
+        "title": "Context window blowouts",
+        "description": "No token management means every recall dumps a wall of context into the LLM and hopes for the best."
+      },
+      {
+        "icon": "🔇",
+        "title": "Silent data loss in multi-agent systems",
+        "description": "Concurrent agent writes with no conflict resolution. Facts overwrite each other. Nobody notices."
+      }
+    ]
+  },
+  "solution": {
+    "headline": "One engine. Three memory types. Zero glue code.",
+    "memory_types": [
+      {
+        "icon": "🟢",
+        "name": "Episodic",
+        "tagline": "What happened",
+        "description": "Timestamped records of agent interactions, observations, and tool calls. Stored as vector embeddings with full metadata. Agents search by similarity — \"find me situations like this one.\""
+      },
+      {
+        "icon": "🟢",
+        "name": "Semantic",
+        "tagline": "What is known",
+        "description": "A temporal knowledge graph where facts have lifecycles. Facts get superseded automatically when newer ones contradict them. Confidence scores, validity windows, provenance links."
+      },
+      {
+        "icon": "🟢",
+        "name": "Procedural",
+        "tagline": "How to do things",
+        "description": "Learned workflows captured from successful agent task completions. Reusable templates with EMA success tracking. This memory type basically doesn't exist in any other system."
+      }
+    ]
+  },
+  "comparison_table": {
+    "headline": "Why CogDB",
+    "subheadline": "Most memory systems bolt on vector search. CogDB was designed from scratch for the full cognitive stack.",
+    "columns": ["Capability", "Mem0", "Zep", "Letta", "MemPalace", "CogDB"],
+    "rows": [
+      ["Episodic memory",              "✓",  "✓",  "✓",  "✓",  "✓"],
+      ["Semantic / knowledge graph",   "✓",  "✓",  "✓",  "✓",  "✓"],
+      ["Procedural memory",            "⚠️", "✗",  "⚠️", "✗",  "✓"],
+      ["Token-aware retrieval",        "✗",  "✗",  "✗",  "⚠️", "✓"],
+      ["Multi-agent memory scopes",    "scoped", "per-user", "shared", "per-agent", "4 formal scopes"],
+      ["Single unified engine",        "✗",  "✗",  "✗",  "✗",  "✓"],
+      ["MCP server",                   "✗",  "✗",  "✗",  "✓",  "✓"],
+      ["AutoGen + LangGraph adapters", "partial", "✗", "✗", "✗", "✓"],
+      ["CrewAI adapter",               "✗",  "✗",  "✗",  "✗",  "✓"],
+      ["OpenAI Agents SDK adapter",    "✗",  "✗",  "✗",  "✗",  "✓"],
+      ["Semantic Kernel adapter",      "✗",  "✗",  "✗",  "✗",  "✓"],
+      ["LlamaIndex adapter",           "✗",  "✗",  "✗",  "✗",  "✓"],
+      ["Schema migration tooling",     "✗",  "✗",  "✗",  "✗",  "✓"]
+    ]
+  },
+  "benchmark": {
+    "headline": "90.7 / 100",
+    "label": "Tri-Memory Retrieval Benchmark",
+    "description": "Suite 1 measures episodic + semantic + procedural recall quality across a mixed workload. 140 tests pass. Score improved from 87.9 → 90.7 with the learned ImportanceModel (Ridge regression).",
+    "details": [
+      { "label": "Episodic + Procedural",  "score": "94.6 / 100" },
+      { "label": "Semantic + Episodic",    "score": "87.3 / 100" },
+      { "label": "All memory types",       "score": "90.2 / 100" },
+      { "label": "Consistency score",      "score": "100%" },
+      { "label": "Write throughput",       "score": "~830 ops/s" },
+      { "label": "Search throughput",      "score": "~1100 ops/s" }
+    ]
+  },
+  "token_retrieval": {
+    "headline": "Token-aware retrieval that actually works.",
+    "body": "Most memory systems dump a wall of context into the LLM and hope for the best. CogDB fills your token budget from the top with the highest-importance memories that fit. Faster responses. Lower API costs. No context window blowouts.",
+    "levels": [
+      { "level": "L0", "label": "Identity",       "tokens": "~50",  "description": "Always included" },
+      { "level": "L1", "label": "Critical facts",  "tokens": "~200", "description": "Included" },
+      { "level": "L2", "label": "Task-relevant",   "tokens": "~250", "description": "Included" },
+      { "level": "L3", "label": "Deep search",     "tokens": "0",    "description": "Skipped — budget exhausted" }
+    ]
+  },
+  "integrations": {
+    "headline": "Works with every major AI framework",
+    "items": [
+      { "name": "AutoGen",           "status": "✓" },
+      { "name": "LangGraph",         "status": "✓" },
+      { "name": "CrewAI",            "status": "✓" },
+      { "name": "OpenAI Agents SDK", "status": "✓" },
+      { "name": "Semantic Kernel",   "status": "✓" },
+      { "name": "LlamaIndex",        "status": "✓" },
+      { "name": "MCP",               "status": "✓" }
+    ]
+  },
+  "features": [
+    {
+      "icon": "🦀",
+      "title": "Rust storage engine",
+      "description": "Purpose-built HNSW vector index, WAL crash recovery, and petgraph knowledge graph — all behind a clean Python API."
+    },
+    {
+      "icon": "🧠",
+      "title": "Learned importance model",
+      "description": "Ridge regression on access patterns ranks memories by relevance. No external API key required."
+    },
+    {
+      "icon": "🔒",
+      "title": "4-scope multi-agent isolation",
+      "description": "Private, team, org, and session scopes with contradiction detection at write time. No silent data loss."
+    },
+    {
+      "icon": "🔄",
+      "title": "Schema migration",
+      "description": "Versioned add/rename/drop/change_type with metadata backfill. db.migrate_schema() keeps your data consistent across schema changes."
+    },
+    {
+      "icon": "📡",
+      "title": "MCP server built-in",
+      "description": "cogdb-mcp CLI exposes 6 tools to any MCP-compatible agent — Claude Code, Cursor, Windsurf, and more."
+    },
+    {
+      "icon": "⚡",
+      "title": "Zero cold-start overhead",
+      "description": "Singleton engine per db_path. No connection pools, no warmup. Just open and use."
+    }
+  ],
+  "roadmap": [
+    { "phase": "Phase 0 — Python PoC",       "version": "v0.2.0",  "status": "done",    "summary": "Tri-memory engine, pipeline, AutoGen + LangGraph + MCP adapters." },
+    { "phase": "Phase 1 — Rust Engine",      "version": "v0.3.0",  "status": "done",    "summary": "Purpose-built storage with HNSW, WAL, crash recovery, PyO3 bindings." },
+    { "phase": "Phase 2 — ML Retrieval",     "version": "v0.4.0",  "status": "done",    "summary": "Learned importance model, HNSW rank blending, tokenised procedure search. Score: 90.7/100." },
+    { "phase": "Phase 3 — Schema Evolution", "version": "current", "status": "current", "summary": "Typed schemas (3A), migration tooling (3C), metadata indexing (3B in progress)." },
+    { "phase": "Phase 4 — Distributed",      "version": "future",  "status": "planned", "summary": "Clustered WAL replication, multi-node deployment." }
+  ],
+  "install_command": "pip install git+https://github.com/MuLIAICHI/cogdb.git",
+  "cta_footer": {
+    "headline": "Ready to give your agents a real memory?",
+    "subheadline": "One install. Three memory types. Zero backends to manage.",
+    "github_label": "Star on GitHub",
+    "github_url": "https://github.com/MuLIAICHI/cogdb"
+  }
+}

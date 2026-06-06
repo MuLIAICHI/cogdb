@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CogDB — A Second Brain for AI Agents</title>
+  <meta name="description" content="The only database that gives AI agents episodic, semantic, and procedural memory — all in one engine. One install, one interface, one data store." />
+  <meta property="og:title" content="CogDB — A Second Brain for AI Agents" />
+  <meta property="og:description" content="The only database that gives AI agents episodic, semantic, and procedural memory — all in one engine." />
+  <meta property="og:image" content="../assets/banner.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0a;
+      --bg-card:   #111111;
+      --bg-card2:  #161616;
+      --border:    #222222;
+      --border2:   #2a2a2a;
+      --green:     #10b981;
+      --green-dim: #059669;
+      --green-glow:#10b98122;
+      --text:      #f0f0f0;
+      --text-dim:  #888888;
+      --text-mid:  #aaaaaa;
+      --radius:    12px;
+      --radius-sm: 8px;
+      --font:      system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    section { padding: 96px 0; }
+    section + section { border-top: 1px solid var(--border); }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      max-width: 1100px; margin: 0 auto; padding: 0 24px;
+    }
+    .nav-logo {
+      font-size: 1.1rem; font-weight: 700; color: var(--text);
+      text-decoration: none; display: flex; align-items: center; gap: 8px;
+    }
+    .nav-logo .dot { color: var(--green); }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a {
+      color: var(--text-dim); text-decoration: none; font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--green); color: #000 !important; font-weight: 600 !important;
+      padding: 8px 18px; border-radius: 6px; font-size: 0.875rem !important;
+      transition: background 0.2s !important;
+    }
+    .nav-cta:hover { background: var(--green-dim) !important; }
+    @media (max-width: 640px) { .nav-links a:not(.nav-cta) { display: none; } }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: var(--radius-sm);
+      font-size: 0.95rem; font-weight: 600; text-decoration: none;
+      cursor: pointer; border: none; transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--green); color: #000;
+    }
+    .btn-primary:hover { background: var(--green-dim); transform: translateY(-1px); }
+    .btn-secondary {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border2);
+    }
+    .btn-secondary:hover { border-color: var(--green); color: var(--green); transform: translateY(-1px); }
+
+    /* ── Hero ── */
+    #hero {
+      padding: 120px 0 96px;
+      text-align: center;
+      border-top: none;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, #10b98115 0%, transparent 70%);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--bg-card); border: 1px solid var(--border2);
+      border-radius: 100px; padding: 6px 16px;
+      font-size: 0.8rem; color: var(--green); font-weight: 600;
+      margin-bottom: 32px;
+    }
+    .hero-badge .pulse {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 0 var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0   rgba(16,185,129,0.6); }
+      70%  { box-shadow: 0 0 0 8px rgba(16,185,129,0);   }
+      100% { box-shadow: 0 0 0 0   rgba(16,185,129,0);   }
+    }
+    #hero h1 {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #fff 40%, #aaa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    #hero p {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--text-mid);
+      max-width: 620px; margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    .hero-ctas { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 60px; }
+
+    .hero-code {
+      max-width: 640px; margin: 0 auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      text-align: left;
+    }
+    .code-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      background: var(--bg-card2);
+    }
+    .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .code-dot.red    { background: #ff5f57; }
+    .code-dot.yellow { background: #ffbd2e; }
+    .code-dot.green  { background: #28ca41; }
+    .code-label { color: var(--text-dim); font-size: 0.75rem; margin-left: auto; font-family: var(--font-mono); }
+    .hero-code pre {
+      padding: 20px 24px; overflow-x: auto;
+      font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.7;
+      color: #cdd6f4;
+    }
+
+    /* ── Syntax highlight ── */
+    .kw  { color: #89b4fa; }
+    .fn  { color: var(--green); }
+    .str { color: #a6e3a1; }
+    .cm  { color: #585b70; }
+    .num { color: #fab387; }
+
+    /* ── Section labels ── */
+    .section-label {
+      display: inline-block;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--green);
+      margin-bottom: 12px;
+    }
+    .section-headline {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800; line-height: 1.2;
+      letter-spacing: -0.02em; margin-bottom: 16px;
+    }
+    .section-subheadline {
+      color: var(--text-mid); font-size: 1.05rem;
+      max-width: 580px; line-height: 1.7;
+    }
+    .section-header { margin-bottom: 56px; }
+    .section-header.center { text-align: center; }
+    .section-header.center .section-subheadline { margin: 0 auto; }
+
+    /* ── Cards grid ── */
+    .cards-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 800px) { .cards-3 { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .card:hover { border-color: var(--green); transform: translateY(-3px); }
+    .card-icon { font-size: 1.5rem; margin-bottom: 14px; }
+    .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+    .card-tag {
+      font-size: 0.72rem; font-weight: 600; color: var(--green);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    .card p { color: var(--text-dim); font-size: 0.875rem; line-height: 1.65; }
+
+    /* ── Problem section ── */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 48px;
+    }
+    @media (max-width: 800px) { .problem-grid { grid-template-columns: 1fr; } }
+    .problem-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+    .problem-card .icon { font-size: 1.8rem; margin-bottom: 16px; }
+    .problem-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
+    .problem-card p { color: var(--text-dim); font-size: 0.875rem; line-height: 1.65; }
+
+    /* ── Comparison table ── */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead tr { background: var(--bg-card2); }
+    th {
+      padding: 14px 20px; text-align: left;
+      font-weight: 700; color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    th:last-child { color: var(--green); }
+    td {
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-mid);
+    }
+    tr:last-child td { border-bottom: none; }
+    td:first-child { color: var(--text); font-weight: 500; }
+    td:last-child { color: var(--green); font-weight: 600; }
+    tbody tr:hover { background: var(--bg-card2); }
+    .check    { color: var(--green); }
+    .cross    { color: #444; }
+    .partial  { color: #888; }
+
+    /* ── Benchmark ── */
+    #benchmark { background: radial-gradient(ellipse 60% 50% at 50% 50%, #10b98108 0%, transparent 70%); }
+    .benchmark-card {
+      max-width: 700px; margin: 0 auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px;
+      text-align: center;
+    }
+    .benchmark-score {
+      font-size: clamp(3.5rem, 10vw, 6rem);
+      font-weight: 900; color: var(--green);
+      line-height: 1; letter-spacing: -0.04em;
+      margin-bottom: 8px;
+    }
+    .benchmark-label {
+      font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 16px;
+    }
+    .benchmark-desc { color: var(--text-mid); font-size: 0.9rem; max-width: 480px; margin: 0 auto 36px; }
+    .benchmark-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-top: 32px;
+    }
+    @media (max-width: 640px) { .benchmark-grid { grid-template-columns: 1fr 1fr; } }
+    .bench-stat {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+    .bench-stat .value { font-size: 1.2rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .bench-stat .label2 { font-size: 0.75rem; color: var(--text-dim); }
+
+    /* ── Token retrieval ── */
+    .token-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    @media (max-width: 800px) { .token-grid { grid-template-columns: 1fr; } }
+    .token-levels { display: flex; flex-direction: column; gap: 12px; }
+    .token-level {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      transition: border-color 0.2s;
+    }
+    .token-level:hover { border-color: var(--green); }
+    .level-badge {
+      width: 32px; height: 32px; border-radius: 6px;
+      background: var(--bg); border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 800; color: var(--green);
+      font-family: var(--font-mono); flex-shrink: 0;
+    }
+    .level-info { flex: 1; }
+    .level-name { font-weight: 600; font-size: 0.875rem; margin-bottom: 2px; }
+    .level-desc { font-size: 0.78rem; color: var(--text-dim); }
+    .level-tokens { font-size: 0.78rem; font-weight: 700; color: var(--green); font-family: var(--font-mono); flex-shrink: 0; }
+    .level-skip { text-decoration: line-through; color: var(--text-dim) !important; }
+
+    /* ── Integrations ── */
+    .integrations-grid {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      justify-content: center;
+    }
+    .integration-pill {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 10px 20px;
+      font-size: 0.875rem; font-weight: 600; color: var(--text);
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .integration-pill:hover { border-color: var(--green); color: var(--green); transform: translateY(-2px); }
+    .integration-pill .dot { color: var(--green); font-size: 0.7rem; }
+
+    /* ── Code examples ── */
+    .code-tabs { display: flex; gap: 4px; margin-bottom: -1px; }
+    .code-tab {
+      padding: 10px 20px; font-size: 0.8rem; font-weight: 600;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-bottom: none; border-radius: 8px 8px 0 0;
+      cursor: pointer; color: var(--text-dim); transition: all 0.2s;
+    }
+    .code-tab.active { background: var(--bg-card2); color: var(--text); border-color: var(--border2); }
+    .code-panel {
+      background: var(--bg-card2);
+      border: 1px solid var(--border2);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      overflow: hidden;
+    }
+    .code-panel pre {
+      padding: 28px; overflow-x: auto;
+      font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.7;
+      color: #cdd6f4;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Architecture ── */
+    .arch-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .arch-block pre {
+      padding: 36px;
+      font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.65;
+      color: #aaa; overflow-x: auto;
+    }
+    .arch-block pre .layer { color: var(--text); font-weight: 700; }
+    .arch-block pre .green { color: var(--green); }
+    .arch-block pre .dim   { color: #555; }
+
+    /* ── Features grid ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 900px) { .features-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px) { .features-grid { grid-template-columns: 1fr; } }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .feature-icon { font-size: 1.5rem; margin-bottom: 12px; }
+    .feature-card h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; }
+    .feature-card p { color: var(--text-dim); font-size: 0.825rem; line-height: 1.6; }
+
+    /* ── Install / CTA footer ── */
+    #cta-footer {
+      text-align: center;
+      background: radial-gradient(ellipse 70% 50% at 50% 100%, #10b98112 0%, transparent 60%);
+    }
+    #cta-footer .section-headline { margin-bottom: 12px; }
+    #cta-footer .section-subheadline { margin: 0 auto 40px; }
+    .install-block {
+      display: inline-flex; align-items: center; gap: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 20px 14px 24px;
+      margin-bottom: 36px; flex-wrap: wrap; justify-content: center;
+    }
+    .install-block code {
+      font-family: var(--font-mono); font-size: 0.875rem;
+      color: var(--green);
+    }
+    .copy-btn {
+      background: var(--bg); border: 1px solid var(--border2);
+      border-radius: 6px; padding: 6px 12px;
+      font-size: 0.75rem; font-weight: 600; color: var(--text-dim);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .copy-btn:hover { border-color: var(--green); color: var(--green); }
+    .cta-footer-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      color: var(--text-dim); font-size: 0.8rem;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-inner a { color: var(--text-dim); text-decoration: none; }
+    .footer-inner a:hover { color: var(--green); }
+    .footer-right { display: flex; gap: 20px; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#">Cog<span class="dot">DB</span></a>
+    <div class="nav-links">
+      <a href="#problem">Problem</a>
+      <a href="#solution">Memory</a>
+      <a href="#why">Why CogDB</a>
+      <a href="#code">Code</a>
+      <a href="https://github.com/MuLIAICHI/cogdb" target="_blank" rel="noopener" class="nav-cta">GitHub →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-badge">
+      <span class="pulse"></span>
+      v0.4.0 · 90.7/100 on tri-memory benchmark
+    </div>
+    <h1>A Second Brain<br/>for AI Agents</h1>
+    <p>The only database that gives AI agents episodic, semantic, and procedural memory — all in one engine.</p>
+    <div class="hero-ctas">
+      <a href="https://github.com/MuLIAICHI/cogdb" class="btn btn-primary" target="_blank" rel="noopener">Get Started →</a>
+      <a href="docs/" class="btn btn-secondary">View Docs</a>
+    </div>
+
+    <div class="hero-code">
+      <div class="code-bar">
+        <span class="code-dot red"></span>
+        <span class="code-dot yellow"></span>
+        <span class="code-dot green"></span>
+        <span class="code-label">quickstart.py</span>
+      </div>
+      <pre><code><span class="kw">from</span> cogdb <span class="kw">import</span> CognitiveDB
+
+db = <span class="fn">CognitiveDB</span>(db_path=<span class="str">"./agent_memory"</span>)
+
+<span class="cm"># Store an episodic memory</span>
+db.<span class="fn">remember</span>(<span class="str">"Deployed v2.3. CORS error on /users."</span>, agent_id=<span class="str">"devops"</span>, importance=<span class="num">0.9</span>)
+
+<span class="cm"># Store a fact (auto-supersedes contradictions)</span>
+db.<span class="fn">learn</span>(subject=<span class="str">"api"</span>, predicate=<span class="str">"version"</span>, object=<span class="str">"v2.3"</span>, agent_id=<span class="str">"devops"</span>)
+
+<span class="cm"># Store a workflow</span>
+db.<span class="fn">learn_procedure</span>(name=<span class="str">"fix_cors"</span>, steps=[...], agent_id=<span class="str">"devops"</span>)
+
+<span class="cm"># Recall with a 500-token budget — nothing wasted</span>
+memories = db.<span class="fn">recall</span>(<span class="str">"How do we fix CORS errors?"</span>, agent_id=<span class="str">"devops"</span>, token_budget=<span class="num">500</span>)</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PROBLEM ═══════════════ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">The Problem</span>
+      <h2 class="section-headline">Every AI agent framework treats memory<br/>as someone else's problem.</h2>
+      <p class="section-subheadline">You bolt on a vector DB. Then a graph DB. Then SQLite. Now you're maintaining three backends that don't talk to each other — and silent data loss happens at every concurrent write.</p>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="icon">⚠️</div>
+        <h3>Three backends, zero coordination</h3>
+        <p>Vector DB + graph DB + SQLite — maintained separately, queried separately, breaking separately. Every search requires three round-trips you stitched together by hand.</p>
+      </div>
+      <div class="problem-card">
+        <div class="icon">💥</div>
+        <h3>Context window blowouts</h3>
+        <p>No token management means every recall dumps a wall of context into the LLM and hopes for the best. Your agent burns the entire budget on memories from last week.</p>
+      </div>
+      <div class="problem-card">
+        <div class="icon">🔇</div>
+        <h3>Silent data loss in multi-agent systems</h3>
+        <p>Concurrent agent writes with no conflict resolution. Facts overwrite each other. Two agents disagree about the same fact. Nobody notices until production breaks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ SOLUTION ═══════════════ -->
+<section id="solution">
+  <div class="container">
+    <div class="section-header center">
+      <span class="section-label">The Solution</span>
+      <h2 class="section-headline">One engine. Three memory types.<br/>Zero glue code.</h2>
+      <p class="section-subheadline">CogDB unifies the three types of memory that map to how cognition actually works. One install, one API, one store.</p>
+    </div>
+    <div class="cards-3">
+      <div class="card">
+        <div class="card-icon">🟢</div>
+        <div class="card-tag">Episodic</div>
+        <h3>What happened</h3>
+        <p>Timestamped records of agent interactions, observations, and tool calls. Stored as vector embeddings with full metadata. Agents search by similarity — <em>"find me situations like this one."</em></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🟢</div>
+        <div class="card-tag">Semantic</div>
+        <h3>What is known</h3>
+        <p>A temporal knowledge graph where facts have lifecycles. Facts get superseded automatically when newer ones contradict them. Confidence scores, validity windows, provenance links — all built in.</p>
+      </div>
+      <div class="card" style="border-color: #10b98133;">
+        <div class="card-icon">🟢</div>
+        <div class="card-tag">Procedural ✦ unique to CogDB</div>
+        <h3>How to do things</h3>
+        <p>Learned workflows captured from successful agent task completions. Reusable templates with EMA success tracking. <strong>This memory type basically doesn't exist in any other system.</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ WHY COGDB ═══════════════ -->
+<section id="why">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Comparison</span>
+      <h2 class="section-headline">Why CogDB</h2>
+      <p class="section-subheadline">Most memory systems bolt on vector search as an afterthought. CogDB was designed from scratch for the full cognitive stack.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>Mem0</th>
+            <th>Zep</th>
+            <th>Letta</th>
+            <th>MemPalace</th>
+            <th>CogDB</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Episodic memory</td>           <td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td>Semantic / knowledge graph</td> <td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td>Procedural memory</td>          <td class="partial">⚠️</td><td class="cross">✗</td><td class="partial">⚠️</td><td class="cross">✗</td><td>✓</td></tr>
+          <tr><td>Token-aware retrieval</td>      <td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="partial">⚠️</td><td>✓</td></tr>
+          <tr><td>Multi-agent memory scopes</td>  <td class="partial">scoped</td><td class="partial">per-user</td><td class="partial">shared</td><td class="partial">per-agent</td><td>4 formal scopes</td></tr>
+          <tr><td>Single unified engine</td>      <td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td>✓</td></tr>
+          <tr><td>MCP server built-in</td>        <td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td><td>✓</td></tr>
+          <tr><td>AutoGen + LangGraph adapters</td><td class="partial">partial</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td>✓</td></tr>
+          <tr><td>CrewAI adapter</td>             <td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td>✓</td></tr>
+          <tr><td>OpenAI Agents SDK adapter</td>  <td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td>✓</td></tr>
+          <tr><td>Semantic Kernel adapter</td>    <td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td>✓</td></tr>
+          <tr><td>LlamaIndex adapter</td>         <td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td>✓</td></tr>
+          <tr><td>Schema migration tooling</td>   <td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td>✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ BENCHMARK ═══════════════ -->
+<section id="benchmark">
+  <div class="container">
+    <div class="benchmark-card">
+      <div class="benchmark-score">90.7</div>
+      <div class="benchmark-label">/ 100 · Tri-Memory Retrieval Benchmark</div>
+      <p class="benchmark-desc">Suite 1 measures episodic + semantic + procedural recall quality across a mixed workload. Score improved from 87.9 → 90.7 with the learned ImportanceModel (Ridge regression). 140/140 tests pass.</p>
+      <div class="benchmark-grid">
+        <div class="bench-stat"><div class="value">94.6</div><div class="label2">Episodic + Procedural</div></div>
+        <div class="bench-stat"><div class="value">87.3</div><div class="label2">Semantic + Episodic</div></div>
+        <div class="bench-stat"><div class="value">100%</div><div class="label2">Consistency score</div></div>
+        <div class="bench-stat"><div class="value">~830</div><div class="label2">Write ops/s</div></div>
+        <div class="bench-stat"><div class="value">~1100</div><div class="label2">Search ops/s</div></div>
+        <div class="bench-stat"><div class="value">140/140</div><div class="label2">Tests passing</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ TOKEN RETRIEVAL ═══════════════ -->
+<section id="tokens">
+  <div class="container">
+    <div class="token-grid">
+      <div>
+        <span class="section-label">Token-Aware Retrieval</span>
+        <h2 class="section-headline" style="margin-bottom: 16px;">Stop drowning your LLM in irrelevant memories.</h2>
+        <p style="color: var(--text-mid); font-size: 1rem; line-height: 1.7; margin-bottom: 24px;">Most memory systems dump everything and hope the LLM figures it out. CogDB fills your token budget from the top with the highest-importance memories that fit — and stops the moment the budget is spent.</p>
+        <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.7;">Faster responses. Lower API costs. No context window blowouts. Set a budget and forget about it.</p>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 12px; font-family: var(--font-mono);">Budget: 500 tokens</div>
+        <div class="token-levels">
+          <div class="token-level">
+            <div class="level-badge">L0</div>
+            <div class="level-info">
+              <div class="level-name">Identity</div>
+              <div class="level-desc">Always included</div>
+            </div>
+            <div class="level-tokens">~50 tok</div>
+          </div>
+          <div class="token-level">
+            <div class="level-badge">L1</div>
+            <div class="level-info">
+              <div class="level-name">Critical facts</div>
+              <div class="level-desc">Included · 300 remaining</div>
+            </div>
+            <div class="level-tokens">~200 tok</div>
+          </div>
+          <div class="token-level">
+            <div class="level-badge">L2</div>
+            <div class="level-info">
+              <div class="level-name">Task-relevant</div>
+              <div class="level-desc">Included · 50 remaining</div>
+            </div>
+            <div class="level-tokens">~250 tok</div>
+          </div>
+          <div class="token-level" style="opacity: 0.45;">
+            <div class="level-badge" style="color: var(--text-dim);">L3</div>
+            <div class="level-info">
+              <div class="level-name">Deep search</div>
+              <div class="level-desc level-skip">Budget exhausted — skipped</div>
+            </div>
+            <div class="level-tokens level-skip">0 tok</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ INTEGRATIONS ═══════════════ -->
+<section id="integrations">
+  <div class="container">
+    <div class="section-header center">
+      <span class="section-label">Integrations</span>
+      <h2 class="section-headline">Works with every major AI framework</h2>
+      <p class="section-subheadline">Drop-in adapters — not wrappers. Native protocol implementations for each framework.</p>
+    </div>
+    <div class="integrations-grid">
+      <a href="https://github.com/MuLIAICHI/cogdb" class="integration-pill" target="_blank" rel="noopener"><span class="dot">●</span> AutoGen</a>
+      <a href="https://github.com/MuLIAICHI/cogdb" class="integration-pill" target="_blank" rel="noopener"><span class="dot">●</span> LangGraph</a>
+      <a href="https://github.com/MuLIAICHI/cogdb" class="integration-pill" target="_blank" rel="noopener"><span class="dot">●</span> CrewAI</a>
+      <a href="https://github.com/MuLIAICHI/cogdb" class="integration-pill" target="_blank" rel="noopener"><span class="dot">●</span> OpenAI Agents SDK</a>
+      <a href="https://github.com/MuLIAICHI/cogdb" class="integration-pill" target="_blank" rel="noopener"><span class="dot">●</span> Semantic Kernel</a>
+      <a href="https://github.com/MuLIAICHI/cogdb" class="integration-pill" target="_blank" rel="noopener"><span class="dot">●</span> LlamaIndex</a>
+      <a href="https://github.com/MuLIAICHI/cogdb" class="integration-pill" target="_blank" rel="noopener"><span class="dot">●</span> MCP</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ CODE EXAMPLES ═══════════════ -->
+<section id="code">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Code Examples</span>
+      <h2 class="section-headline">Batteries included, no boilerplate.</h2>
+      <p class="section-subheadline">From zero to a working tri-memory agent in 30 lines. Framework adapters are single-file drop-ins.</p>
+    </div>
+
+    <div class="code-tabs">
+      <button class="code-tab active" onclick="showTab('basic', this)">Basic usage</button>
+      <button class="code-tab" onclick="showTab('autogen', this)">With AutoGen</button>
+    </div>
+
+    <div class="code-panel">
+      <div id="tab-basic" class="tab-content active">
+        <pre><code><span class="kw">from</span> cogdb <span class="kw">import</span> CognitiveDB
+
+db = <span class="fn">CognitiveDB</span>(db_path=<span class="str">"./agent_memory"</span>)
+
+<span class="cm"># ─── Episodic: timestamped events with vector search ───</span>
+db.<span class="fn">remember</span>(
+    <span class="str">"Deployed v2.3 to production. CORS error on /users endpoint."</span>,
+    agent_id=<span class="str">"devops-agent"</span>,
+    importance=<span class="num">0.9</span>,
+)
+
+<span class="cm"># ─── Semantic: facts with auto-supersession ───</span>
+db.<span class="fn">learn</span>(
+    subject=<span class="str">"api_service"</span>, predicate=<span class="str">"version"</span>, object=<span class="str">"v2.3"</span>,
+    agent_id=<span class="str">"devops-agent"</span>, confidence=<span class="num">1.0</span>,
+)
+
+<span class="cm"># ─── Procedural: reusable learned workflows ───</span>
+db.<span class="fn">learn_procedure</span>(
+    name=<span class="str">"fix_cors_error"</span>,
+    steps=[
+        {<span class="str">"action"</span>: <span class="str">"check_nginx_config"</span>, <span class="str">"tool"</span>: <span class="str">"cat /etc/nginx/conf.d/api.conf"</span>},
+        {<span class="str">"action"</span>: <span class="str">"add_cors_headers"</span>,   <span class="str">"tool"</span>: <span class="str">"sed"</span>},
+        {<span class="str">"action"</span>: <span class="str">"reload_nginx"</span>,       <span class="str">"tool"</span>: <span class="str">"systemctl reload nginx"</span>},
+        {<span class="str">"action"</span>: <span class="str">"verify"</span>,             <span class="str">"tool"</span>: <span class="str">"curl -I"</span>},
+    ],
+    agent_id=<span class="str">"devops-agent"</span>,
+    applicable_contexts=[<span class="str">"cors"</span>, <span class="str">"nginx"</span>, <span class="str">"api"</span>],
+)
+
+<span class="cm"># ─── Recall with a 500-token budget ───</span>
+memories = db.<span class="fn">recall</span>(
+    <span class="str">"How do we fix CORS errors?"</span>,
+    agent_id=<span class="str">"devops-agent"</span>,
+    token_budget=<span class="num">500</span>,
+)
+
+<span class="cm"># ─── Progressive context loading (L0 → L3) ───</span>
+context = db.<span class="fn">get_context</span>(
+    agent_id=<span class="str">"devops-agent"</span>, level=<span class="num">2</span>,
+    task_hint=<span class="str">"API gateway returning 403 on preflight"</span>,
+    token_budget=<span class="num">800</span>,
+)</code></pre>
+      </div>
+
+      <div id="tab-autogen" class="tab-content">
+        <pre><code><span class="kw">from</span> cogdb.adapters.autogen <span class="kw">import</span> CogDBMemory
+<span class="kw">from</span> autogen_agentchat.agents <span class="kw">import</span> AssistantAgent
+<span class="kw">from</span> autogen_ext.models.openai <span class="kw">import</span> OpenAIChatCompletionClient
+
+<span class="cm"># Drop-in replacement for AutoGen's basic ListMemory</span>
+memory = <span class="fn">CogDBMemory</span>(db_path=<span class="str">"./agent_memory"</span>)
+
+agent = <span class="fn">AssistantAgent</span>(
+    name=<span class="str">"assistant"</span>,
+    model_client=<span class="fn">OpenAIChatCompletionClient</span>(model=<span class="str">"gpt-4o"</span>),
+    memory=[memory],
+)
+
+<span class="cm"># Memories persist across sessions automatically</span>
+<span class="cm"># Episodic + semantic + procedural — all three memory types available</span>
+
+
+<span class="cm"># ─── LangGraph ───</span>
+<span class="kw">from</span> cogdb.adapters.langgraph <span class="kw">import</span> CogDBCheckpointer, CogDBStore
+<span class="kw">from</span> langgraph.graph <span class="kw">import</span> StateGraph
+
+graph = <span class="fn">StateGraph</span>(State).<span class="fn">compile</span>(
+    checkpointer=<span class="fn">CogDBCheckpointer</span>(db_path=<span class="str">"./memory"</span>),
+    store=<span class="fn">CogDBStore</span>(db_path=<span class="str">"./memory"</span>),
+)
+
+<span class="cm"># ─── MCP server (Claude Code, Cursor, Windsurf) ───</span>
+<span class="cm"># cogdb-mcp --db-path ./memory</span>
+<span class="cm"># Exposes: remember, recall, learn, learn_procedure, get_context, forget</span></code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ARCHITECTURE ═══════════════ -->
+<section id="architecture">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Architecture</span>
+      <h2 class="section-headline">Four layers, one engine.</h2>
+      <p class="section-subheadline">A Rust storage core behind a clean Python API. Every layer is independently testable and replaceable.</p>
+    </div>
+    <div class="arch-block">
+      <pre>
+<span class="green">┌─────────────────────────────────────────────────────────────────────────┐</span>
+<span class="green">│</span>  <span class="layer">Layer 1 — Agent Interface</span>                                              <span class="green">│</span>
+<span class="green">│</span>  AutoGen · LangGraph · CrewAI · OpenAI Agents · Semantic Kernel         <span class="green">│</span>
+<span class="green">│</span>  LlamaIndex · MCP server (cogdb-mcp) · Native Python SDK                <span class="green">│</span>
+<span class="green">└────────────────────────────────────┬────────────────────────────────────┘</span>
+                                     <span class="green">│</span>
+<span class="green">┌────────────────────────────────────▼────────────────────────────────────┐</span>
+<span class="green">│</span>  <span class="layer">Layer 2 — Query Planner</span>                                                 <span class="green">│</span>
+<span class="green">│</span>  Token-aware retrieval · Store routing · ImportanceModel (Ridge)         <span class="green">│</span>
+<span class="green">│</span>  L0 → L3 progressive loading · HNSW rank blending                       <span class="green">│</span>
+<span class="green">└────────────────────────────────────┬────────────────────────────────────┘</span>
+                                     <span class="green">│</span>
+<span class="green">┌────────────────────────────────────▼────────────────────────────────────┐</span>
+<span class="green">│</span>  <span class="layer">Layer 3 — Cognitive Pipeline</span>                                            <span class="green">│</span>
+<span class="green">│</span>  Encoder (sentence-transformers) · Consolidator · Decay (EMA)            <span class="green">│</span>
+<span class="green">│</span>  Schema validation · Migration · SPO extraction                          <span class="green">│</span>
+<span class="green">└────────────────────────────────────┬────────────────────────────────────┘</span>
+                                     <span class="green">│</span>
+<span class="green">┌────────────────────────────────────▼────────────────────────────────────┐</span>
+<span class="green">│</span>  <span class="layer">Layer 4 — Tri-Memory Store</span>  <span class="dim">(Rust · cogdb_engine · PyO3)</span>              <span class="green">│</span>
+<span class="green">│</span>                                                                         <span class="green">│</span>
+<span class="green">│</span>   <span class="green">Episodic</span>           <span class="green">Semantic</span>              <span class="green">Procedural</span>                  <span class="green">│</span>
+<span class="green">│</span>   HNSW vectors      petgraph DiGraph       SQLite + WAL fence           <span class="green">│</span>
+<span class="green">│</span>   SQLite + WAL      SQLite + WAL           EMA success rate             <span class="green">│</span>
+<span class="green">│</span>   Scope filters     Auto-supersession      Tokenised retrieval          <span class="green">│</span>
+<span class="green">└─────────────────────────────────────────────────────────────────────────┘</span>
+      </pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FEATURES ═══════════════ -->
+<section id="features">
+  <div class="container">
+    <div class="section-header center">
+      <span class="section-label">Features</span>
+      <h2 class="section-headline">Everything you need.<br/>Nothing you don't.</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🦀</div>
+        <h3>Rust storage engine</h3>
+        <p>Purpose-built HNSW vector index, WAL crash recovery, and petgraph knowledge graph — all behind a clean Python API. No external vector DB required.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>Learned importance model</h3>
+        <p>Ridge regression on access patterns ranks memories by relevance. Trained offline, runs locally. No external API key required — ever.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>4-scope multi-agent isolation</h3>
+        <p>Private, team, org, and session scopes with contradiction detection at write time. Scope enforcement happens in Rust — no unguarded code path.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <h3>Schema migration</h3>
+        <p>Versioned add / rename / drop / change_type with metadata backfill. <code>db.migrate_schema()</code> keeps data consistent across schema changes without data loss.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📡</div>
+        <h3>MCP server built-in</h3>
+        <p><code>cogdb-mcp --db-path ./memory</code> exposes 6 tools to any MCP-compatible agent. Claude Code, Cursor, Windsurf, and more — zero configuration.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Zero cold-start overhead</h3>
+        <p>Singleton engine per db_path. No connection pools, no warmup, no daemon. Just import and call. ~1.2 ms write, ~0.9 ms search — excluding encoding.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ CTA FOOTER ═══════════════ -->
+<section id="cta-footer">
+  <div class="container">
+    <div class="section-header center">
+      <span class="section-label">Get Started</span>
+      <h2 class="section-headline">Ready to give your agents a real memory?</h2>
+      <p class="section-subheadline">One install. Three memory types. Zero backends to manage.</p>
+    </div>
+
+    <div class="install-block">
+      <code id="install-cmd">pip install git+https://github.com/MuLIAICHI/cogdb.git</code>
+      <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
+    </div>
+
+    <div class="cta-footer-btns">
+      <a href="https://github.com/MuLIAICHI/cogdb" class="btn btn-primary" target="_blank" rel="noopener">⭐ Star on GitHub</a>
+      <a href="docs/" class="btn btn-secondary">Read the Docs</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="footer-inner">
+    <span>Built by <a href="https://ayautomate.com" target="_blank" rel="noopener">Mustapha Liaichi</a> · <a href="https://ayautomate.com" target="_blank" rel="noopener">AYAutomate</a></span>
+    <div class="footer-right">
+      <a href="https://github.com/MuLIAICHI/cogdb" target="_blank" rel="noopener">GitHub</a>
+      <a href="docs/">Docs</a>
+      <a href="mailto:mustapha@ayautomate.com">Contact</a>
+      <span style="color: #333;">MIT License</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function showTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.code-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function copyInstall(btn) {
+    const text = document.getElementById('install-cmd').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    }).catch(() => {
+      btn.textContent = 'Copy';
+    });
+  }
+</script>
+</body>
+</html>

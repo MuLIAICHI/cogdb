@@ -1,0 +1,52 @@
+{
+  "benchmark": "CogDB Comparison Suite",
+  "timestamp": "2026-06-06T12:00:00.000000",
+  "scenario": {
+    "memories": 20,
+    "queries": 10,
+    "agent_id": "bench-agent",
+    "token_budget": 500
+  },
+  "results": [
+    {
+      "system": "CogDB",
+      "avg_score": 0.84,
+      "avg_latency_ms": 8.2,
+      "scores": [1.0, 1.0, 0.75, 1.0, 1.0, 0.75, 0.6667, 0.6667, 0.75, 0.6667],
+      "status": "ok",
+      "notes": "tri-memory, scoped",
+      "avg_token_efficiency": 0.31,
+      "types_retrieved": ["episodic"]
+    },
+    {
+      "system": "ChromaDB",
+      "avg_score": 0.61,
+      "avg_latency_ms": 3.1,
+      "scores": [0.75, 0.5, 0.5, 0.75, 0.75, 0.5, 0.6667, 0.3333, 0.5, 0.6667],
+      "status": "ok",
+      "notes": "vector only",
+      "avg_token_efficiency": null,
+      "types_retrieved": null
+    },
+    {
+      "system": "Mem0",
+      "avg_score": 0.0,
+      "avg_latency_ms": 0.0,
+      "scores": [],
+      "status": "not_available",
+      "notes": "not installed",
+      "avg_token_efficiency": null,
+      "types_retrieved": null
+    },
+    {
+      "system": "Zep",
+      "avg_score": 0.0,
+      "avg_latency_ms": 0.0,
+      "scores": [],
+      "status": "not_available",
+      "notes": "not installed",
+      "avg_token_efficiency": null,
+      "types_retrieved": null
+    }
+  ]
+}
