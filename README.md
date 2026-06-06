@@ -70,6 +70,11 @@ Learned workflows captured from successful agent task completions. Reusable temp
 | Single unified engine | ✗ | ✗ | ✗ | ✗ | **✓** |
 | MCP server | ✗ | ✗ | ✗ | ✓ | **✓** |
 | AutoGen + LangGraph adapters | partial | ✗ | ✗ | ✗ | **✓** |
+| CrewAI adapter | ✗ | ✗ | ✗ | ✗ | **✓** |
+| OpenAI Agents SDK adapter | ✗ | ✗ | ✗ | ✗ | **✓** |
+| Semantic Kernel adapter | ✗ | ✗ | ✗ | ✗ | **✓** |
+| LlamaIndex adapter | ✗ | ✗ | ✗ | ✗ | **✓** |
+| Schema migration tooling | ✗ | ✗ | ✗ | ✗ | **✓** |
 
 ## 🏗 Architecture
 
@@ -81,7 +86,7 @@ Learned workflows captured from successful agent task completions. Reusable temp
 
 Four layers, one engine:
 
-- **Layer 1 — Agent Interface.** Drop-in adapters for AutoGen and LangGraph. MCP server so any MCP-compatible agent can connect. Native Python SDK.
+- **Layer 1 — Agent Interface.** Drop-in adapters for AutoGen, LangGraph, CrewAI, OpenAI Agents SDK, Semantic Kernel, and LlamaIndex. MCP server so any MCP-compatible agent can connect. Native Python SDK.
 - **Layer 2 — Query Planner.** Token-aware retrieval routes queries across stores and packs results into the budget you set. Highest importance first, nothing wasted.
 - **Layer 3 — Cognitive Pipeline.** Encoding, storage, consolidation, retrieval, and decay. Memories don't just sit there — they evolve.
 - **Layer 4 — Tri-Memory Store.** Episodic (vector embeddings), semantic (temporal knowledge graph), procedural (workflow templates). Three stores, one query interface.
@@ -195,6 +200,101 @@ Exposes 6 tools — `remember`, `recall`, `learn`, `learn_procedure`, `get_conte
 
 </td>
 </tr>
+<tr>
+<td width="33%" valign="top">
+
+### 🟢 CrewAI
+
+```python
+from cogdb.adapters.crewai import CogDBCrewAIStorage
+
+memory = CogDBCrewAIStorage(
+    agent_id="my-crew-agent",
+    db_path="./memory",
+)
+# Pass to CrewAI agent via memory_config
+```
+
+Drop-in `Storage` implementation for CrewAI agents.
+
+</td>
+<td width="33%" valign="top">
+
+### 🟢 OpenAI Agents SDK
+
+```python
+from cogdb.adapters.openai_agents import (
+    CogDBAgentMemory,
+    make_memory_tools,
+)
+
+mem = CogDBAgentMemory(agent_id="my-agent")
+tools = make_memory_tools(mem)
+# Add tools to your Agent
+```
+
+Exposes `remember`, `recall`, and `get_context` as agent tools.
+
+</td>
+<td width="33%" valign="top">
+
+### 🟢 Semantic Kernel
+
+```python
+from cogdb.adapters.semantic_kernel import CogDBMemoryStore
+
+store = CogDBMemoryStore(
+    agent_id="sk-agent",
+    db_path="./memory",
+)
+# Use as SK MemoryStoreBase
+```
+
+Full async `MemoryStoreBase` implementation.
+
+</td>
+</tr>
+<tr>
+<td width="33%" valign="top">
+
+### 🟢 LlamaIndex
+
+```python
+from cogdb.adapters.llamaindex import CogDBChatMemory
+
+memory = CogDBChatMemory.from_defaults(
+    agent_id="li-agent",
+    db_path="./memory",
+)
+# Use as LlamaIndex BaseMemory
+```
+
+`BaseMemory` + `CogDBVectorIndex` for chat and retrieval agents.
+
+</td>
+<td width="33%" valign="top">
+
+### 🟢 Schema Migration
+
+```python
+from cogdb.schema.migration import SchemaMigration
+from cogdb.schema import FieldSchema
+
+migration = (
+    SchemaMigration(agent_id="my-agent",
+                    from_version=1, to_version=2)
+    .add_field("priority", FieldSchema(type="int"), default=0)
+    .rename_field("tags", "labels")
+)
+db.migrate_schema(migration)
+```
+
+Safe versioned schema evolution with metadata backfill.
+
+</td>
+<td width="33%" valign="top">
+</td>
+</tr>
 </table>
 
 ## 📊 Token-Aware Retrieval
@@ -240,7 +340,10 @@ Contradiction detection runs at write time. Conflict resolution handles concurre
 - ✅ **Phase 0 — Python PoC** `v0.2.0` — Tri-memory engine, pipeline, AutoGen + LangGraph + MCP adapters.
 - ✅ **Phase 1 — Rust Engine** `v0.3.0` — Purpose-built storage with HNSW, WAL, crash recovery, PyO3 bindings.
 - ✅ **Phase 2 — ML Retrieval** `v0.4.0` — Learned importance model, HNSW rank blending, tokenised procedure search. Suite 1 benchmark: **90.7 / 100**.
-- 🔄 **Phase 3 — Schema Evolution** *(in progress)* — Typed metadata schemas (3A shipped), metadata indexing (3B), migration tooling (3C).
+- ✅ **Phase 3A — Typed Schemas** — Dynamic metadata schemas, per-agent validation, strict/non-strict modes.
+- ✅ **Phase 3C — Schema Migration** — Versioned add/rename/drop/change_type with metadata backfill. `db.migrate_schema()`.
+- ✅ **Adapters expansion** — CrewAI, OpenAI Agents SDK, Semantic Kernel, LlamaIndex. **6 framework adapters total.**
+- 🔄 **Phase 3B — Metadata Indexing** *(next)* — SQLite indexes on queried metadata keys (requires Rust store changes).
 - 📋 **Phase 4 — Distributed** — Clustered WAL replication, multi-node deployment.
 
 ## 📚 Research
@@ -258,8 +361,8 @@ Full landscape analysis covering 15+ existing systems → [docs/research.md](./d
 
 CogDB is in early development and contributions are welcome across:
 
-- **Framework adapters** — CrewAI, OpenAI Agents SDK, Semantic Kernel
-- **Benchmarks** — LongMemEval, multi-agent consistency tests
+- **Framework adapters** — LlamaIndex plugins, custom integrations
+- **Benchmarks** — LongMemEval, comparison vs Mem0/Zep
 - **Core engine** — Memory consolidation, importance scoring, retrieval
 - **Research** — New memory system analyses, academic paper reviews
 

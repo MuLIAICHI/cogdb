@@ -48,6 +48,7 @@ class MetadataSchema:
 
     Args:
         agent_id: The agent this schema applies to.
+        name: Human-readable schema name (optional).
         fields: Mapping of field name to FieldSchema definition.
         version: Schema version. Auto-incremented on re-registration.
         created_at: ISO-8601 timestamp set by SchemaRegistry on registration.
@@ -70,6 +71,7 @@ class MetadataSchema:
     fields: dict[str, FieldSchema] = field(default_factory=dict)
     version: int = 1
     created_at: str = ""  # ISO string; populated by SchemaRegistry.register()
+    name: str = ""
 
 
 class SchemaValidationError(ValueError):
@@ -93,3 +95,7 @@ class SchemaValidationError(ValueError):
             f"Metadata schema violation ({len(errors)} error(s)): "
             + "; ".join(errors)
         )
+
+
+# Phase 3C — migration classes re-exported for convenience
+from cogdb.schema.migration import FieldChange, SchemaMigration, SchemaMigrator  # noqa: E402

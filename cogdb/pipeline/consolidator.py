@@ -175,7 +175,7 @@ class Consolidator:
                     source_episodes=list(set(spo_sources[(subj, pred, obj)])),
                     metadata={"source": "consolidation", "episode_count": count},
                 )
-                self._semantic.add(triple)
+                self._semantic.add_triple(triple)
                 written += 1
 
         return written

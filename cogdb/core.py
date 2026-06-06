@@ -412,6 +412,34 @@ class CognitiveDB:
         """
         return self._schema_registry.list_schemas()
 
+    def migrate_schema(
+        self,
+        migration: "SchemaMigration",
+    ) -> "MetadataSchema":
+        """Apply a schema migration for an agent.
+
+        Args:
+            migration: A SchemaMigration describing the version change.
+
+        Returns:
+            The updated MetadataSchema.
+
+        Raises:
+            ValueError: If from_version doesn't match current schema version.
+
+        Example:
+            >>> from cogdb.schema.migration import SchemaMigration
+            >>> from cogdb.schema import FieldSchema
+            >>> migration = (
+            ...     SchemaMigration(agent_id="my-agent", from_version=1, to_version=2)
+            ...     .add_field("priority", FieldSchema(type="int", default=0), default=0)
+            ... )
+            >>> new_schema = db.migrate_schema(migration)
+        """
+        from cogdb.schema.migration import SchemaMigrator
+        migrator = SchemaMigrator(self._schema_registry)
+        return migrator.apply(migration)
+
     # ── Utilities ───────────────────────────────────────────────
 
     def forget(self, memory_id: str, memory_type: MemoryType) -> bool:

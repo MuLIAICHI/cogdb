@@ -34,7 +34,10 @@ class SchemaRegistry:
 
     _FILENAME = "schemas.json"
 
-    def __init__(self, db_path: str, strict: bool = True) -> None:
+    def __init__(self, db_path: "str | Any", strict: bool = True) -> None:
+        # Accept a CogDBConfig object or a plain path string
+        if hasattr(db_path, "db_path"):
+            db_path = db_path.db_path
         self._path = Path(db_path) / self._FILENAME
         self._strict = strict
         self._schemas: dict[str, MetadataSchema] = {}
@@ -176,6 +179,7 @@ class SchemaRegistry:
                 }
                 schema = MetadataSchema(
                     agent_id=entry["agent_id"],
+                    name=entry.get("name", ""),
                     fields=fields,
                     version=entry.get("version", 1),
                     created_at=entry.get("created_at", ""),
@@ -188,6 +192,7 @@ class SchemaRegistry:
         entries = [
             {
                 "agent_id": schema.agent_id,
+                "name": getattr(schema, "name", ""),
                 "fields": {
                     name: {
                         "type": fd.type,
