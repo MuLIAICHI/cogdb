@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pip install -r requirements-docs.txt && mkdocs build --site-dir public/docs && cp -r website/. public/",
+  "outputDirectory": "public",
+  "installCommand": "pip install -r requirements-docs.txt"
+}
